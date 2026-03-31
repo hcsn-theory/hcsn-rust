@@ -643,7 +643,11 @@ impl RewriteEngine {
         // Nonlinear memory: stability^γ creates threshold effect
         // Low stability ≈ no protection, high stability ≈ strong protection
         let mu = 0.3; // memory coupling
+<<<<<<< HEAD
         let gamma = 2.2; // Phase 10b: Production target (alpha ≈ 2.26)
+=======
+        let gamma = 2.0; // Phase 8: Reduced to prevent "frozen" particles (was 2.4)
+>>>>>>> 822c9cb1d13ff838c80013f6febd7df2cf23b9df
         let stability_cap = 30.0_f64;
         let vertex_stability = self.stability.get(&anchor_v).copied().unwrap_or(0.0);
         let normalized_stability = (vertex_stability / stability_cap).min(1.0);

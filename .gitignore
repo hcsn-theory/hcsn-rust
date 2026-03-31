@@ -1,4 +1,3 @@
 /target/
-/exports/*.json
 **/*.rs.bk
 Cargo.lock

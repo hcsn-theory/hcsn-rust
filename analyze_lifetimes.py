@@ -1,56 +1,51 @@
 import json
 import os
+import numpy as np
 
-def main():
-    json_path = "exports/particle_lifetimes.json"
-    if not os.path.exists(json_path):
-        print(f"Error: Could not find {json_path}. Run the Rust simulation first.")
+def analyze_ensemble(p=0.64, seeds=[1, 2, 3, 4, 5]):
+    all_particles = []
+    for s in seeds:
+        path = f"exports/particle_lifetimes_p{p:.2f}_s{s}.json"
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                try:
+                    data = json.load(f)
+                    all_particles.extend(data)
+                except:
+                    print(f"Error reading {path}")
+    
+    if not all_particles:
+        print(f"No lifetime data found for p={p:.2f} ensemble.")
         return
 
-    with open(json_path, 'r') as f:
-        try:
-            lifetimes = json.load(f)
-        except json.JSONDecodeError:
-            print("Error parsing JSON. Check simulation output.")
-            return
-
-    if not lifetimes:
-        print("\n=======================================================")
-        print("          HCSN Spatial Vacuum Baseline Confirmed       ")
-        print("=======================================================")
-        print("0 valid proto-particles (age >= 50) were detected.")
-        print("\nResult: Pristine structural vacuum verified.")
-        print("All high-coherence topological fluctuations organically")
-        print("diffused back into the geometry before reaching the")
-        print("survival threshold (tau_vac = 50 steps).")
-        print("\nThis formally proves the baseline: the framework does")
-        print("NOT artificially spawn matter without geometric consent.")
-        print("=======================================================")
-        print("\nTo map the spontaneous formation distribution, execute")
-        print("the deep-time experimental simulation:")
-        print(" -> cargo run --release --bin run_simulation -- --steps 50000\n")
-        return
-
-    ages = [p["age"] for p in lifetimes]
-    sizes = [p["max_size"] for p in lifetimes]
-    radii = [p["radius"] for p in lifetimes]
-
-    print("\n=======================================================")
-    print("          HCSN Spontaneous Emergence Results           ")
-    print("=======================================================")
-    print(f"Total Particles Formed: {len(lifetimes)}")
-    print(f"Average Lifetime:       {sum(ages)/len(ages):.1f} steps")
-    print(f"Max Lifetime:           {max(ages)} steps")
-    print(f"Average Size:           {sum(sizes)/len(sizes):.1f} nodes")
-    print(f"Average Bounded Radius: {sum(radii)/len(radii):.2f}")
+    ages = np.array([p["age"] for p in all_particles])
+    max_sizes = np.array([p["max_size"] for p in all_particles])
     
-    print("\nTop 5 Most Resilient Topological Knots:")
-    for p in sorted(lifetimes, key=lambda x: x["age"], reverse=True)[:5]:
-        status_label = "(ALIVE)" if p['status'] == "alive" else "(DECAYED)"
-        print(f" -> Knot ID {p['id']:>3} | Survival: {p['age']:>5} steps | Vol: {p['max_size']:>3} | Rad: {p['radius']:.2f} {status_label}")
+    # Calculate Power Law Exponent (Alpha) via Hazard Rate
+    # Approximation: Alpha = 1 + N / sum(log(tau / tau_min))
+    tau_min = 1000
+    candidates = ages[ages >= tau_min]
+    if len(candidates) > 10:
+        alpha = 1 + len(candidates) / np.sum(np.log(candidates / tau_min))
+    else:
+        alpha = 0.0
+
+    print("\n" + "="*60)
+    print(f"       HCSN ENSEMBLE LIFETIME ANALYSIS (p={p:.2f})")
+    print("="*60)
+    print(f"Total Particles (Seeds 1-5): {len(all_particles)}")
+    print(f"Particles > 10k steps:      {np.sum(ages >= 10000)}")
+    print(f"Max Lifetime Observed:       {np.max(ages)} steps")
+    print(f"Ensemble Growth Exponent(α): {alpha:.3f} (Target: 1.7-2.2)")
+    print(f"Typical Particle Mass:       {np.mean(max_sizes):.1f} nodes")
+    print("-"*60)
     
-    print("\n[Data ready for publication distribution plots: Lifetime vs Volume]")
-    print("=======================================================\n")
+    print("Top 5 Most Resilient Topological Knots (Ensemble-Wide):")
+    top_5 = sorted(all_particles, key=lambda x: x["age"], reverse=True)[:5]
+    for i, p_info in enumerate(top_5):
+        print(f" {i+1}. Knot ID {p_info['id']:>4} | Age: {p_info['age']:>6} | Max Vol: {p_info['max_size']:>4}")
+    
+    print("="*60 + "\n")
 
 if __name__ == "__main__":
-    main()
+    analyze_ensemble()

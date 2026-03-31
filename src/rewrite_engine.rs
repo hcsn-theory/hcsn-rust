@@ -6,7 +6,7 @@ use rand::seq::SliceRandom;
 
 use crate::hypergraph::Hypergraph;
 use crate::physics_params::PhysicsParams;
-use crate::rules::{edge_creation_rule, vertex_fusion_rule, UndoRecord};
+use crate::rules::{edge_creation_rule, UndoRecord};
 use crate::observables::{
     worldline_interaction_graph, hierarchical_closure, TopologicalKnot, InteractionEvent, 
     detect_candidate_knots, component_radius, compute_coherence_raw,

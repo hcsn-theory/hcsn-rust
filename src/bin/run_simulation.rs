@@ -145,7 +145,7 @@ fn main() {
     let mut last_k = engine.h.average_coordination();
     let mut last_l = engine.h.max_chain_length();
     let mut last_omega = 0.0;
-    let mut prev_total_stability = 0.0;
+    // let prev_total_stability = 0.0;
     let start_time = Instant::now();
     let mut last_print_time = Instant::now();
 
@@ -167,7 +167,7 @@ fn main() {
             let d_l = l as isize - last_l as isize;
 
             let omega = hierarchical_closure(&engine.h, &inter);
-            let domega = omega - last_omega;
+            let _domega = omega - last_omega;
             
             let total_attempts = accepted + rejected;
             let acc_ratio = if total_attempts > 0 { accepted as f64 / total_attempts as f64 } else { 0.0 };

@@ -1,0 +1,27 @@
+[package]
+name = "hcsn-rust"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+rand = { version = "0.8", features = ["small_rng"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ctrlc = "3.2"
+
+[lib]
+name = "hcsn_rust"
+path = "src/lib.rs"
+
+[[bin]]
+name = "run_simulation"
+path = "src/bin/run_simulation.rs"
+
+[[bin]]
+name = "exp_critical_scan"
+path = "src/bin/exp_critical_scan.rs"
+
+[[bin]]
+name = "interaction_experiment"
+path = "src/bin/interaction_experiment.rs"

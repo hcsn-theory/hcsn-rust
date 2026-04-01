@@ -4,9 +4,7 @@ use hcsn_rust::hypergraph::Hypergraph;
 use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::{
     worldline_interaction_graph,
-    interaction_concentration,
-    closure_density,
-    hierarchical_closure,
+    compute_omega,
 };
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -166,7 +164,7 @@ fn main() {
             let dk = k - last_k;
             let d_l = l as isize - last_l as isize;
 
-            let omega = hierarchical_closure(&engine.h, &inter);
+            let omega = compute_omega(&inter);
             let _domega = omega - last_omega;
             
             let total_attempts = accepted + rejected;

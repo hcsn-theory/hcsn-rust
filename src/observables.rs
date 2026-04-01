@@ -187,206 +187,46 @@ pub fn count_triangles(interactions: &HashMap<u64, HashSet<u64>>) -> usize {
     triangles
 }
 
-pub fn closure_density(interactions: &HashMap<u64, HashSet<u64>>) -> f64 {
-    /*
-    Ψ = T / (E + 1)
-    T: number of triangles
-    E: number of edges
-    */
-    let mut total_degree = 0;
-    for nbrs in interactions.values() {
-        total_degree += nbrs.len();
-    }
-    let edges = total_degree / 2;
-    let t = count_triangles(interactions);
-    
-    t as f64 / (edges + 1) as f64
-}
+/*
+Ω is a consistent structural observable derived from local clustering statistics. 
+While not unique, it provides a stable, scale-local diagnostic of structural organization.
+*/
+pub fn compute_omega(inter: &HashMap<u64, HashSet<u64>>) -> f64 {
+    let mut total = 0.0;
+    let mut count = 0;
 
-pub fn coarse_grain_interactions(
-    h: &Hypergraph,
-    interactions: &HashMap<u64, HashSet<u64>>,
-    scale: usize,
-) -> (HashMap<u64, HashSet<u64>>, HashMap<u64, f64>) {
-    /*
-    Coarse-grain interaction graph by grouping nodes.
-    Returns:
-        coarse_interactions: map
-        coarse_depths: map (effective time field)
-    */
-    let nodes: Vec<u64> = interactions.keys().cloned().collect();
-    let mut coarse_interactions: HashMap<u64, HashSet<u64>> = HashMap::new();
-    let mut coarse_depths: HashMap<u64, f64> = HashMap::new();
+    for neighbors in inter.values() {
+        let k = neighbors.len();
 
-    // partition nodes into blocks
-    let mut blocks = Vec::new();
-    for chunk in nodes.chunks(scale) {
-        blocks.push(chunk.to_vec());
-    }
-
-    let mut block_id = HashMap::new();
-    for (idx, block) in blocks.iter().enumerate() {
-        for &u in block {
-            block_id.insert(u, idx as u64);
+        if k < 2 {
+            continue;
         }
 
-        // effective time = mean depth
-        let mut sum_depth = 0;
-        let mut count = 0;
-        for &u in block {
-            if let Some(v) = h.vertices.get(&u) {
-                sum_depth += v.depth;
-                count += 1;
-            }
-        }
-        
-        let mut avg_depth = 0.0;
-        if count > 0 {
-            avg_depth = sum_depth as f64 / count as f64;
-        }
-        coarse_depths.insert(idx as u64, avg_depth);
-    }
+        let mut edges_between_neighbors = 0;
+        let mut possible = 0;
 
-    // build coarse interaction graph
-    for (&u, nbrs) in interactions {
-        let bu = block_id[&u];
-        let entry = coarse_interactions.entry(bu).or_default();
-        
-        for v in nbrs {
-            let bv = block_id[v];
-            if bu != bv {
-                entry.insert(bv);
-            }
-        }
-    }
+        let neigh_vec: Vec<_> = neighbors.iter().collect();
 
-    (coarse_interactions, coarse_depths)
-}
-
-pub fn hierarchical_closure(
-    h: &Hypergraph,
-    interactions: &HashMap<u64, HashSet<u64>>,
-) -> f64 {
-    // Measure stability of closure under coarse-graining.
-    let scales = vec![2, 4, 8];
-    let mut psi_vals = Vec::new();
-    let mut current = interactions.clone();
-
-    for s in scales {
-        let (coarse_inter, _) = coarse_grain_interactions(h, &current, s);
-        psi_vals.push(closure_density(&coarse_inter));
-        current = coarse_inter;
-    }
-
-    if psi_vals.is_empty() {
-        return 0.0;
-    }
-
-    *psi_vals.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap()
-}
-
-pub fn loop_mismatch_weights(
-    interactions: &HashMap<u64, HashSet<u64>>,
-    depths: &HashMap<u64, f64>,
-    beta: f64,
-) -> Vec<f64> {
-    // Protected metric mismatch: degree mismatch × time variance.
-    let mut degrees = HashMap::new();
-    for (&u, vs) in interactions {
-        degrees.insert(u, vs.len());
-    }
-    
-    if degrees.is_empty() {
-        return Vec::new();
-    }
-
-    let sum_d: usize = degrees.values().sum();
-    let avg_d = sum_d as f64 / degrees.len() as f64;
-    let mut weights = Vec::new();
-
-    for (&u, nbrs_u) in interactions {
-        for &v in nbrs_u {
-            if v <= u {
-                continue;
-            }
-            if let Some(nbrs_v) = interactions.get(&v) {
-                let common = nbrs_u.intersection(nbrs_v);
-                for &w in common {
-                    if w > v {
-                        let du = degrees[&u] as f64;
-                        let dv = degrees[&v] as f64;
-                        let dw = degrees[&w] as f64;
-                        let base = ((du + dv + dw) - 3.0 * avg_d).abs();
-
-                        let tu = depths.get(&u).cloned().unwrap_or(0.0);
-                        let tv = depths.get(&v).cloned().unwrap_or(0.0);
-                        let tw = depths.get(&w).cloned().unwrap_or(0.0);
-
-                        let mean_t = (tu + tv + tw) / 3.0;
-                        let var_t = ((tu - mean_t).powi(2) +
-                                     (tv - mean_t).powi(2) +
-                                     (tw - mean_t).powi(2)) / 3.0;
-
-                        let theta = base * (1.0 + beta * var_t);
-                        weights.push(theta);
+        for i in 0..neigh_vec.len() {
+            for j in (i + 1)..neigh_vec.len() {
+                possible += 1;
+                if let Some(nbrs) = inter.get(neigh_vec[i]) {
+                    if nbrs.contains(neigh_vec[j]) {
+                        edges_between_neighbors += 1;
                     }
                 }
             }
         }
+
+        let local_c = (edges_between_neighbors as f64) / (possible as f64);
+        total += local_c;
+        count += 1;
     }
 
-    weights
+    if count == 0 { 0.0 } else { total / count as f64 }
 }
 
-pub fn emergent_distance_scale(
-    interactions: &HashMap<u64, HashSet<u64>>,
-    depths: &HashMap<u64, f64>,
-    beta: f64,
-) -> f64 {
-    // Emergent metric scale with time-protected mismatch.
-    let weights = loop_mismatch_weights(interactions, depths, beta);
-    if weights.is_empty() {
-        return 0.0;
-    }
-    let sum: f64 = weights.iter().sum();
-    sum / weights.len() as f64
-}
 
-pub fn renormalized_distance_scales(
-    h: &Hypergraph,
-    interactions: &HashMap<u64, HashSet<u64>>,
-    _depths: &HashMap<u64, f64>,
-    beta: f64,
-) -> HashMap<usize, f64> {
-    // Compute protected emergent distance scale under coarse-graining.
-    let scales = vec![2, 4, 8, 16];
-    let mut results = HashMap::new();
-    
-    let mut current_inter = interactions.clone();
-    for s in scales {
-        let (coarse_inter, coarse_depths) = coarse_grain_interactions(h, &current_inter, s);
-        let dist = emergent_distance_scale(&coarse_inter, &coarse_depths, beta);
-        results.insert(s, dist);
-        
-        current_inter = coarse_inter;
-        // depths are only used for mismatch weights, we don't need to save coarse_depths
-        // for the next iteration in this particular loop if we're just calculating the distance scale
-        // Wait, looking at python, current_depths = coarse_depths WAS used for the next iteration.
-        // Let's just suppress the warning or use it correctly if it's actually unused.
-        // Actually, Python passes current_inter and current_depths to coarse_grain_interactions.
-        // But coarse_grain_interactions doesn't take depths as input! It calculates them from the hypergraph!
-        // Ah, looking closely at Python:
-        // coarse_inter, coarse_depths = coarse_grain_interactions(H, current_inter, scale=s)
-        // results[s] = emergent_distance_scale(coarse_inter, coarse_depths, beta)
-        // current_inter = coarse_inter
-        // current_depths = coarse_depths
-        // So current_depths IS updated but never actually USED in the next loop iteration in Python either, 
-        // because coarse_grain_interactions only takes H and interactions.
-        // I will just remove the assignment.
-    }
-
-    results
-}
 
 pub fn label_frustration(h: &Hypergraph) -> usize {
     let mut mismatches = 0;
@@ -417,8 +257,8 @@ pub fn local_omega(
     v: u64,
 ) -> f64 {
     /*
-    Local contribution to hierarchical closure.
-    Proxy: fraction of interactions involving v that participate in closure.
+    Local contribution to Ω. Defined as the fraction of interactions 
+    involving vertex v that participate in closed local motifs.
     */
     let neighbors = match inter.get(&v) {
         Some(set) => set,
@@ -477,18 +317,25 @@ pub struct TopologicalKnot {
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct InteractionEvent {
-    pub time: usize,
+    pub start_time: usize,
+    pub end_time: Option<usize>,
+    pub duration: usize,
     pub knot_a: u64,
     pub knot_b: u64,
     pub overlap_size: usize,
-    pub overlap_depth: f64,   // chi = overlap / min(size_a, size_b)
+    pub overlap_depth: f64,   // chi = max overlap reached
     pub resonance: f64,       // A = (2*coh_a*coh_b)/(coh_a^2 + coh_b^2)
     
-    // Kinematic states [m, v_scalar, p_scalar, (vx, vy)]
-    pub pre_a: (f64, f64, f64, (f64, f64)),
-    pub pre_b: (f64, f64, f64, (f64, f64)),
-    pub post_a: Option<(f64, f64, f64, (f64, f64))>,
-    pub post_b: Option<(f64, f64, f64, (f64, f64))>,
+    // Kinematic & Structural states 
+    // [m, v_scalar, p_scalar, (vx, vy), coherence, mean_stability, radius, size, boundary_ratio]
+    pub pre_a: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64),
+    pub pre_b: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64),
+    pub post_a: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64)>,
+    pub post_b: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64)>,
+
+    // For internal lifecycle tracking
+    #[serde(skip)]
+    pub steps_below_threshold: usize,
 }
 
 pub fn component_radius(comp: &HashSet<u64>, inter: &HashMap<u64, HashSet<u64>>) -> f64 {
@@ -541,7 +388,7 @@ pub fn local_clustering(inter: &HashMap<u64, HashSet<u64>>, v: u64) -> f64 {
     (links as f64) / possible
 }
 
-pub fn detect_candidate_knots(
+pub fn detect_candidate_knot_neighborhoods(
     h: &Hypergraph,
     inter: &HashMap<u64, HashSet<u64>>,
     min_coherence: f64,

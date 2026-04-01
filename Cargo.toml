@@ -9,6 +9,7 @@ rand = { version = "0.8", features = ["small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ctrlc = "3.2"
+rayon = "1.7"
 
 [lib]
 name = "hcsn_rust"
@@ -25,3 +26,19 @@ path = "src/bin/exp_critical_scan.rs"
 [[bin]]
 name = "interaction_experiment"
 path = "src/bin/interaction_experiment.rs"
+
+[[bin]]
+name = "robustness_pipeline"
+path = "src/bin/robustness_pipeline.rs"
+
+[[bin]]
+name = "pure_emergence_test"
+path = "src/bin/pure_emergence_test.rs"
+
+[[bin]]
+name = "force_law_aggregator"
+path = "src/bin/force_law_aggregator.rs"
+
+[[bin]]
+name = "force_law_fit"
+path = "src/bin/force_law_fit.rs"

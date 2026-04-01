@@ -1,0 +1,4088 @@
+[
+  {
+    "age": 60,
+    "coherence": 1.5294117647058822,
+    "id": 340000,
+    "mass": 32.74740484429066,
+    "max_size": 14,
+    "mean_stability": 1.0291173894699024,
+    "momentum": 1.6060330126984657,
+    "particle_candidate": false,
+    "radius": 1.4285714285714286,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.04904306220095695,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 120,
+    "coherence": 1.6272189349112427,
+    "id": 270000,
+    "mass": 135.03991456881764,
+    "max_size": 51,
+    "mean_stability": 0.5073715638106745,
+    "momentum": 8.877143101943748,
+    "particle_candidate": false,
+    "radius": 1.7843137254901962,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06573717948717948,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 210,
+    "coherence": 1.5277777777777777,
+    "id": 1330001,
+    "mass": 35.01157407407407,
+    "max_size": 15,
+    "mean_stability": 2.000014822700378,
+    "momentum": 3.1419165650561394,
+    "particle_candidate": false,
+    "radius": 1.4761904761904763,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.08973936899862826,
+      0.0
+    ],
+    "worldline_length": 21
+  },
+  {
+    "age": 310,
+    "coherence": 1.5081967213114753,
+    "id": 1310001,
+    "mass": 84.1623219564633,
+    "max_size": 37,
+    "mean_stability": 0.0027238077565801223,
+    "momentum": 4.405117671900793,
+    "particle_candidate": false,
+    "radius": 1.7237237237237237,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.05234073359073358,
+      0.0
+    ],
+    "worldline_length": 31
+  },
+  {
+    "age": 70,
+    "coherence": 1.7142857142857142,
+    "id": 2300004,
+    "mass": 20.57142857142857,
+    "max_size": 7,
+    "mean_stability": 4.902705668163024,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4285714285714286,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 60,
+    "coherence": 1.5476190476190477,
+    "id": 2390005,
+    "mass": 40.7171201814059,
+    "max_size": 17,
+    "mean_stability": 1.7647195557562212,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5220588235294117,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 80,
+    "coherence": 1.5040650406504066,
+    "id": 2470011,
+    "mass": 83.70183092074824,
+    "max_size": 37,
+    "mean_stability": 0.0027238077565801223,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7222222222222223,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 8
+  },
+  {
+    "age": 70,
+    "coherence": 1.6,
+    "id": 2630008,
+    "mass": 20.480000000000004,
+    "max_size": 8,
+    "mean_stability": 4.577755821917662,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4285714285714286,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 70,
+    "coherence": 1.5135135135135136,
+    "id": 2700005,
+    "mass": 38.94229364499635,
+    "max_size": 17,
+    "mean_stability": 0.5066312596920788,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.588235294117647,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 100,
+    "coherence": 1.5034013605442176,
+    "id": 2610006,
+    "mass": 94.9290573372206,
+    "max_size": 42,
+    "mean_stability": 2.826631937275446,
+    "momentum": 4.983499874149101,
+    "particle_candidate": false,
+    "radius": 1.7433217189314751,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.05249709639953548,
+      0.0
+    ],
+    "worldline_length": 10
+  },
+  {
+    "age": 60,
+    "coherence": 1.8,
+    "id": 2780006,
+    "mass": 16.200000000000003,
+    "max_size": 5,
+    "mean_stability": 24.004572726525193,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 540,
+    "coherence": 3.0,
+    "id": 1250000,
+    "mass": 27.0,
+    "max_size": 16,
+    "mean_stability": 0.9348751274092088,
+    "momentum": 3.6179401993355476,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.13399778516057584,
+      0.0
+    ],
+    "worldline_length": 54
+  },
+  {
+    "age": 140,
+    "coherence": 1.5555555555555556,
+    "id": 2630007,
+    "mass": 21.77777777777778,
+    "max_size": 9,
+    "mean_stability": 0.43982404246688117,
+    "momentum": 4.242574437182279,
+    "particle_candidate": false,
+    "radius": 1.2222222222222223,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.1948120915032679,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 290,
+    "coherence": 1.9230769230769231,
+    "id": 2220003,
+    "mass": 70.26627218934911,
+    "max_size": 19,
+    "mean_stability": 0.00005231835532595229,
+    "momentum": 5.440085487524784,
+    "particle_candidate": false,
+    "radius": 1.5614035087719298,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.07742100609614219,
+      0.0
+    ],
+    "worldline_length": 29
+  },
+  {
+    "age": 420,
+    "coherence": 1.6153846153846154,
+    "id": 1980000,
+    "mass": 18.266272189349113,
+    "max_size": 10,
+    "mean_stability": 0.011740524298483782,
+    "momentum": 0.5933179390965508,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.032481610530391024,
+      0.0
+    ],
+    "worldline_length": 42
+  },
+  {
+    "age": 220,
+    "coherence": 2.3793103448275863,
+    "id": 2630010,
+    "mass": 107.56123662306778,
+    "max_size": 19,
+    "mean_stability": 3.6661307442017277,
+    "momentum": 19.105511391968093,
+    "particle_candidate": false,
+    "radius": 1.631578947368421,
+    "status": "dead",
+    "velocity": 0.5907120743034057,
+    "velocity_avg": [
+      0.17762450481041317,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 130,
+    "coherence": 1.5294117647058822,
+    "id": 3180006,
+    "mass": 49.121107266435985,
+    "max_size": 21,
+    "mean_stability": 0.4101337547579758,
+    "momentum": 6.6743502354502215,
+    "particle_candidate": false,
+    "radius": 1.6285714285714286,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.1358754027926961,
+      0.0
+    ],
+    "worldline_length": 13
+  },
+  {
+    "age": 230,
+    "coherence": 1.875,
+    "id": 3180000,
+    "mass": 21.09375,
+    "max_size": 8,
+    "mean_stability": 0.6171999586844658,
+    "momentum": -0.45567908653846034,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      -0.021602564102564045,
+      0.0
+    ],
+    "worldline_length": 23
+  },
+  {
+    "age": 610,
+    "coherence": 1.5454545454545454,
+    "id": 2110003,
+    "mass": 19.107438016528924,
+    "max_size": 8,
+    "mean_stability": 0.0003430400303954542,
+    "momentum": 1.6893444145231682,
+    "particle_candidate": false,
+    "radius": 1.3928571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0884129213483146,
+      0.0
+    ],
+    "worldline_length": 61
+  },
+  {
+    "age": 90,
+    "coherence": 1.6153846153846154,
+    "id": 3830002,
+    "mass": 18.266272189349113,
+    "max_size": 7,
+    "mean_stability": 4.295923239585603,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 320,
+    "coherence": 2.5714285714285716,
+    "id": 3210005,
+    "mass": 46.28571428571429,
+    "max_size": 7,
+    "mean_stability": 0.000387217177313897,
+    "momentum": 3.097959183673467,
+    "particle_candidate": false,
+    "radius": 1.1428571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06693121693121687,
+      0.0
+    ],
+    "worldline_length": 32
+  },
+  {
+    "age": 800,
+    "coherence": 2.0,
+    "id": 2110000,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 0.5356179843172978,
+    "momentum": 0.40865800865800866,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.02554112554112554,
+      0.0
+    ],
+    "worldline_length": 80
+  },
+  {
+    "age": 430,
+    "coherence": 1.55,
+    "id": 3560007,
+    "mass": 28.830000000000005,
+    "max_size": 12,
+    "mean_stability": 5.6074485763093245,
+    "momentum": 1.8796702380952393,
+    "particle_candidate": false,
+    "radius": 1.5303030303030303,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06519841269841273,
+      0.0
+    ],
+    "worldline_length": 43
+  },
+  {
+    "age": 70,
+    "coherence": 1.8,
+    "id": 4590009,
+    "mass": 19.44,
+    "max_size": 6,
+    "mean_stability": 0.01847009115005341,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 420,
+    "coherence": 1.7272727272727273,
+    "id": 3830009,
+    "mass": 20.884297520661157,
+    "max_size": 7,
+    "mean_stability": 0.034891911731394755,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 42
+  },
+  {
+    "age": 320,
+    "coherence": 2.2222222222222223,
+    "id": 4110007,
+    "mass": 59.25925925925927,
+    "max_size": 12,
+    "mean_stability": 0.034798672945319624,
+    "momentum": 7.124209035798044,
+    "particle_candidate": false,
+    "radius": 1.393939393939394,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.12022102747909198,
+      0.0
+    ],
+    "worldline_length": 32
+  },
+  {
+    "age": 600,
+    "coherence": 1.536231884057971,
+    "id": 3500007,
+    "mass": 59.00021003990757,
+    "max_size": 25,
+    "mean_stability": 0.0010429084661131003,
+    "momentum": 3.095755068463007,
+    "particle_candidate": false,
+    "radius": 1.6466666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.052470238095238084,
+      0.0
+    ],
+    "worldline_length": 60
+  },
+  {
+    "age": 350,
+    "coherence": 1.5333333333333334,
+    "id": 4300004,
+    "mass": 21.160000000000004,
+    "max_size": 10,
+    "mean_stability": 20.042213545304023,
+    "momentum": 0.5383564625850354,
+    "particle_candidate": false,
+    "radius": 1.3611111111111112,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.025442176870748363,
+      0.0
+    ],
+    "worldline_length": 35
+  },
+  {
+    "age": 240,
+    "coherence": 1.6666666666666667,
+    "id": 4570002,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 0.00018051525302195312,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 24
+  },
+  {
+    "age": 430,
+    "coherence": 1.6363636363636365,
+    "id": 4210003,
+    "mass": 18.743801652892564,
+    "max_size": 7,
+    "mean_stability": 2.5768822686882884,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1428571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 43
+  },
+  {
+    "age": 1000,
+    "coherence": 1.5263157894736843,
+    "id": 2470002,
+    "mass": 30.28531855955679,
+    "max_size": 16,
+    "mean_stability": 0.000313481680432364,
+    "momentum": 0.5346021695843621,
+    "particle_candidate": true,
+    "radius": 1.2564102564102564,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.017652189080760515,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 340,
+    "coherence": 1.5555555555555556,
+    "id": 4510000,
+    "mass": 24.19753086419753,
+    "max_size": 10,
+    "mean_stability": 0.0003403756616004261,
+    "momentum": 0.20954562810232857,
+    "particle_candidate": false,
+    "radius": 1.3777777777777778,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.008659793814432966,
+      0.0
+    ],
+    "worldline_length": 34
+  },
+  {
+    "age": 130,
+    "coherence": 1.525,
+    "id": 5250001,
+    "mass": 53.48937499999999,
+    "max_size": 23,
+    "mean_stability": 0.012051948369389843,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7588932806324111,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 13
+  },
+  {
+    "age": 270,
+    "coherence": 1.75,
+    "id": 4800002,
+    "mass": 21.4375,
+    "max_size": 7,
+    "mean_stability": 0.0030009721906300827,
+    "momentum": 2.2050000000000005,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.10285714285714288,
+      0.0
+    ],
+    "worldline_length": 27
+  },
+  {
+    "age": 70,
+    "coherence": 1.6666666666666667,
+    "id": 5650005,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.015567158474292884,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 970,
+    "coherence": 1.588235294117647,
+    "id": 3070000,
+    "mass": 20.17993079584775,
+    "max_size": 10,
+    "mean_stability": 0.000458292690628094,
+    "momentum": 0.40914636321478254,
+    "particle_candidate": false,
+    "radius": 1.0357142857142858,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.02027491408934708,
+      0.0
+    ],
+    "worldline_length": 97
+  },
+  {
+    "age": 90,
+    "coherence": 1.625,
+    "id": 5970011,
+    "mass": 21.125,
+    "max_size": 8,
+    "mean_stability": 0.01847009115005341,
+    "momentum": 9.806321022727273,
+    "particle_candidate": false,
+    "radius": 1.5357142857142858,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.4642045454545455,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 50,
+    "coherence": 1.55,
+    "id": 6090017,
+    "mass": 28.830000000000005,
+    "max_size": 12,
+    "mean_stability": 0.0028767725425471167,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5303030303030303,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 5
+  },
+  {
+    "age": 90,
+    "coherence": 1.625,
+    "id": 6350013,
+    "mass": 18.484375,
+    "max_size": 7,
+    "mean_stability": 0.011178425788259174,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.380952380952381,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 220,
+    "coherence": 1.6666666666666667,
+    "id": 6070001,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 0.9348751274092088,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 140,
+    "coherence": 1.65,
+    "id": 6330017,
+    "mass": 32.669999999999995,
+    "max_size": 12,
+    "mean_stability": 0.09821196549886202,
+    "momentum": 3.155625000000004,
+    "particle_candidate": false,
+    "radius": 1.5,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.09659090909090923,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 280,
+    "coherence": 1.5625,
+    "id": 5970010,
+    "mass": 21.97265625,
+    "max_size": 9,
+    "mean_stability": 0.012318076300615498,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3055555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 28
+  },
+  {
+    "age": 50,
+    "coherence": 1.5555555555555556,
+    "id": 6740005,
+    "mass": 16.938271604938272,
+    "max_size": 7,
+    "mean_stability": 0.5356179843172978,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 5
+  },
+  {
+    "age": 280,
+    "coherence": 1.6666666666666667,
+    "id": 6080008,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.0006527815151593559,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 28
+  },
+  {
+    "age": 110,
+    "coherence": 1.6,
+    "id": 6740026,
+    "mass": 20.480000000000004,
+    "max_size": 8,
+    "mean_stability": 0.03486847535543201,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1428571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 11
+  },
+  {
+    "age": 100,
+    "coherence": 1.5294117647058822,
+    "id": 6790001,
+    "mass": 21.05190311418685,
+    "max_size": 9,
+    "mean_stability": 0.0003342944774265856,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2777777777777777,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 10
+  },
+  {
+    "age": 50,
+    "coherence": 1.6666666666666667,
+    "id": 7050018,
+    "mass": 11.111111111111112,
+    "max_size": 4,
+    "mean_stability": 0.8664977762935446,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1666666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 5
+  },
+  {
+    "age": 270,
+    "coherence": 1.55,
+    "id": 6340012,
+    "mass": 21.622500000000002,
+    "max_size": 9,
+    "mean_stability": 0.1059620996970139,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1388888888888888,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 27
+  },
+  {
+    "age": 500,
+    "coherence": 1.6666666666666667,
+    "id": 5930005,
+    "mass": 16.666666666666668,
+    "max_size": 8,
+    "mean_stability": 0.0014290017058654024,
+    "momentum": 1.1622085048010977,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06973251028806586,
+      0.0
+    ],
+    "worldline_length": 50
+  },
+  {
+    "age": 650,
+    "coherence": 1.565217391304348,
+    "id": 5330011,
+    "mass": 29.39886578449906,
+    "max_size": 12,
+    "mean_stability": 2.227042247401982,
+    "momentum": 1.2251734532263847,
+    "particle_candidate": false,
+    "radius": 1.4545454545454546,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.04167417417417422,
+      0.0
+    ],
+    "worldline_length": 65
+  },
+  {
+    "age": 90,
+    "coherence": 1.588235294117647,
+    "id": 7450004,
+    "mass": 27.747404844290656,
+    "max_size": 11,
+    "mean_stability": 10.282942812641126,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.509090909090909,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 870,
+    "coherence": 2.0,
+    "id": 4800007,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 1.716496130192509,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 87
+  },
+  {
+    "age": 380,
+    "coherence": 1.5192307692307692,
+    "id": 6720004,
+    "mass": 62.31767751479289,
+    "max_size": 27,
+    "mean_stability": 8.665512724732519,
+    "momentum": 1.774402022949314,
+    "particle_candidate": false,
+    "radius": 1.774928774928775,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.028473494098494104,
+      0.0
+    ],
+    "worldline_length": 38
+  },
+  {
+    "age": 320,
+    "coherence": 1.55,
+    "id": 7010014,
+    "mass": 28.830000000000005,
+    "max_size": 12,
+    "mean_stability": 0.03412267208218472,
+    "momentum": 2.1062004381161046,
+    "particle_candidate": false,
+    "radius": 1.5303030303030303,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.07305585980284787,
+      0.0
+    ],
+    "worldline_length": 32
+  },
+  {
+    "age": 770,
+    "coherence": 1.5384615384615385,
+    "id": 5390000,
+    "mass": 33.13609467455621,
+    "max_size": 14,
+    "mean_stability": 0.002067128857671324,
+    "momentum": 2.979586987001259,
+    "particle_candidate": false,
+    "radius": 1.5604395604395604,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.08991967871485942,
+      0.0
+    ],
+    "worldline_length": 77
+  },
+  {
+    "age": 90,
+    "coherence": 1.5376344086021505,
+    "id": 7730010,
+    "mass": 87.47982425713954,
+    "max_size": 37,
+    "mean_stability": 0.8368650358888114,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7852852852852852,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 260,
+    "coherence": 2.0,
+    "id": 7300011,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 15.00067304960351,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 26
+  },
+  {
+    "age": 150,
+    "coherence": 1.5714285714285714,
+    "id": 7610004,
+    "mass": 22.224489795918366,
+    "max_size": 9,
+    "mean_stability": 0.5356179843172978,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3888888888888888,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 15
+  },
+  {
+    "age": 510,
+    "coherence": 1.5789473684210527,
+    "id": 6380011,
+    "mass": 24.930747922437675,
+    "max_size": 10,
+    "mean_stability": 1.833012591682449,
+    "momentum": 3.5865962214821505,
+    "particle_candidate": false,
+    "radius": 1.3333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.1438623595505618,
+      0.0
+    ],
+    "worldline_length": 51
+  },
+  {
+    "age": 560,
+    "coherence": 1.5517241379310345,
+    "id": 6330009,
+    "mass": 36.117717003567186,
+    "max_size": 16,
+    "mean_stability": 18.029854836917423,
+    "momentum": 0.5482734518109058,
+    "particle_candidate": false,
+    "radius": 1.5714285714285714,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.01518018018018014,
+      0.0
+    ],
+    "worldline_length": 56
+  },
+  {
+    "age": 120,
+    "coherence": 1.625,
+    "id": 7810007,
+    "mass": 15.84375,
+    "max_size": 6,
+    "mean_stability": 1.984455381937576,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 190,
+    "coherence": 1.5833333333333333,
+    "id": 7730022,
+    "mass": 17.54861111111111,
+    "max_size": 7,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 19
+  },
+  {
+    "age": 1130,
+    "coherence": 1.6153846153846154,
+    "id": 4560003,
+    "mass": 18.266272189349113,
+    "max_size": 9,
+    "mean_stability": 2.3044219210105785,
+    "momentum": 0.43543681510216503,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.02383829664796433,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 70,
+    "coherence": 1.5192307692307692,
+    "id": 8350002,
+    "mass": 62.31767751479289,
+    "max_size": 27,
+    "mean_stability": 8.665512724732519,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.774928774928775,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 590,
+    "coherence": 1.5168539325842696,
+    "id": 6550008,
+    "mass": 75.92791314228,
+    "max_size": 33,
+    "mean_stability": 0.7453757143320826,
+    "momentum": 2.999434305346936,
+    "particle_candidate": false,
+    "radius": 1.7443181818181819,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.039503710575139184,
+      0.0
+    ],
+    "worldline_length": 59
+  },
+  {
+    "age": 60,
+    "coherence": 1.6666666666666667,
+    "id": 8600003,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 1.8519488246990101,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 330,
+    "coherence": 1.5555555555555556,
+    "id": 7690013,
+    "mass": 19.358024691358025,
+    "max_size": 8,
+    "mean_stability": 0.0029707466755648617,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 33
+  },
+  {
+    "age": 960,
+    "coherence": 1.5263157894736843,
+    "id": 5580011,
+    "mass": 23.29639889196676,
+    "max_size": 10,
+    "mean_stability": 0.8986238249826097,
+    "momentum": 0.784684094415048,
+    "particle_candidate": false,
+    "radius": 1.3555555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.033682634730538924,
+      0.0
+    ],
+    "worldline_length": 96
+  },
+  {
+    "age": 790,
+    "coherence": 1.5185185185185186,
+    "id": 6260007,
+    "mass": 25.36488340192044,
+    "max_size": 11,
+    "mean_stability": 0.004043393239344448,
+    "momentum": 0.5636545154884012,
+    "particle_candidate": false,
+    "radius": 1.2545454545454546,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.022221845318860227,
+      0.0
+    ],
+    "worldline_length": 79
+  },
+  {
+    "age": 250,
+    "coherence": 1.5254237288135593,
+    "id": 8160019,
+    "mass": 55.846021258259114,
+    "max_size": 24,
+    "mean_stability": 5.6017139711563075,
+    "momentum": 5.914183489592852,
+    "particle_candidate": false,
+    "radius": 1.673913043478261,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.10590160867938642,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 250,
+    "coherence": 1.5833333333333333,
+    "id": 8160000,
+    "mass": 17.54861111111111,
+    "max_size": 7,
+    "mean_stability": 0.9348751274092086,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 60,
+    "coherence": 1.5242718446601942,
+    "id": 8970006,
+    "mass": 92.93618625695163,
+    "max_size": 40,
+    "mean_stability": 0.7741704964296109,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7987179487179488,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 150,
+    "coherence": 1.6666666666666667,
+    "id": 8690001,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 27.110636718749998,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 15
+  },
+  {
+    "age": 880,
+    "coherence": 1.6363636363636365,
+    "id": 6180007,
+    "mass": 32.13223140495868,
+    "max_size": 12,
+    "mean_stability": 2.5103078913526775,
+    "momentum": 2.340602834621605,
+    "particle_candidate": false,
+    "radius": 1.4545454545454546,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.07284283513097072,
+      0.0
+    ],
+    "worldline_length": 88
+  },
+  {
+    "age": 220,
+    "coherence": 1.5483870967741935,
+    "id": 8510020,
+    "mass": 33.56503642039542,
+    "max_size": 14,
+    "mean_stability": 2.3093710056005796,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4725274725274726,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 650,
+    "coherence": 1.5384615384615385,
+    "id": 7240016,
+    "mass": 26.035502958579883,
+    "max_size": 11,
+    "mean_stability": 0.005478864908315396,
+    "momentum": 1.1484669176976865,
+    "particle_candidate": false,
+    "radius": 1.2727272727272727,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.044111570247933864,
+      0.0
+    ],
+    "worldline_length": 65
+  },
+  {
+    "age": 1760,
+    "coherence": 1.565217391304348,
+    "id": 3880001,
+    "mass": 24.499054820415882,
+    "max_size": 11,
+    "mean_stability": 0.7791718491602113,
+    "momentum": -0.26447843272039867,
+    "particle_candidate": true,
+    "radius": 1.2,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      -0.010795454545454542,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 150,
+    "coherence": 1.8461538461538463,
+    "id": 9570013,
+    "mass": 51.12426035502959,
+    "max_size": 15,
+    "mean_stability": 0.033787352679009515,
+    "momentum": 10.61497886728655,
+    "particle_candidate": false,
+    "radius": 1.542857142857143,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.2076309523809522,
+      0.0
+    ],
+    "worldline_length": 15
+  },
+  {
+    "age": 390,
+    "coherence": 1.5384615384615385,
+    "id": 8790009,
+    "mass": 18.93491124260355,
+    "max_size": 8,
+    "mean_stability": 0.8400038101129315,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2857142857142858,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 39
+  },
+  {
+    "age": 70,
+    "coherence": 1.510204081632653,
+    "id": 9970009,
+    "mass": 79.82507288629736,
+    "max_size": 35,
+    "mean_stability": 0.7432203191526862,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7512605042016807,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 140,
+    "coherence": 1.6666666666666667,
+    "id": 9770003,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 320,
+    "coherence": 1.8,
+    "id": 9280007,
+    "mass": 22.68,
+    "max_size": 7,
+    "mean_stability": 1.9843306497874476,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1428571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 32
+  },
+  {
+    "age": 420,
+    "coherence": 1.6666666666666667,
+    "id": 8890010,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.28668340636209577,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 42
+  },
+  {
+    "age": 360,
+    "coherence": 1.5625,
+    "id": 9280016,
+    "mass": 21.97265625,
+    "max_size": 9,
+    "mean_stability": 0.03075958937790033,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3055555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 36
+  },
+  {
+    "age": 830,
+    "coherence": 1.5238095238095237,
+    "id": 7610010,
+    "mass": 23.219954648526073,
+    "max_size": 10,
+    "mean_stability": 0.012318076300615498,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.288888888888889,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 83
+  },
+  {
+    "age": 560,
+    "coherence": 1.6,
+    "id": 8600020,
+    "mass": 23.040000000000006,
+    "max_size": 9,
+    "mean_stability": 1.8556523163232812,
+    "momentum": 2.59700558659218,
+    "particle_candidate": false,
+    "radius": 1.3333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.11271725636250778,
+      0.0
+    ],
+    "worldline_length": 56
+  },
+  {
+    "age": 170,
+    "coherence": 1.52,
+    "id": 9970019,
+    "mass": 25.4144,
+    "max_size": 11,
+    "mean_stability": 0.10596209969701388,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.309090909090909,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 17
+  },
+  {
+    "age": 620,
+    "coherence": 1.6666666666666667,
+    "id": 8660011,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.015470393078458971,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 62
+  },
+  {
+    "age": 460,
+    "coherence": 1.507936507936508,
+    "id": 9280005,
+    "mass": 68.21617535903249,
+    "max_size": 30,
+    "mean_stability": 8.656799717808473,
+    "momentum": 2.7160003374315576,
+    "particle_candidate": false,
+    "radius": 1.7816091954022988,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.03981460882461996,
+      0.0
+    ],
+    "worldline_length": 46
+  },
+  {
+    "age": 70,
+    "coherence": 1.53125,
+    "id": 10400005,
+    "mass": 32.826171875,
+    "max_size": 14,
+    "mean_stability": 0.003110741384901345,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4615384615384615,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 1210,
+    "coherence": 1.5555555555555556,
+    "id": 6720019,
+    "mass": 14.518518518518519,
+    "max_size": 6,
+    "mean_stability": 2.6239986449104618,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0666666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 790,
+    "coherence": 1.5333333333333334,
+    "id": 8280007,
+    "mass": 25.862222222222226,
+    "max_size": 11,
+    "mean_stability": 0.01847009115005341,
+    "momentum": 1.3425926545792648,
+    "particle_candidate": false,
+    "radius": 1.5818181818181818,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.05191327500950929,
+      0.0
+    ],
+    "worldline_length": 79
+  },
+  {
+    "age": 230,
+    "coherence": 1.5048543689320388,
+    "id": 10150009,
+    "mass": 81.52512018097842,
+    "max_size": 36,
+    "mean_stability": 0.7421703685280336,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.753968253968254,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 23
+  },
+  {
+    "age": 180,
+    "coherence": 1.6153846153846154,
+    "id": 10410002,
+    "mass": 18.266272189349113,
+    "max_size": 8,
+    "mean_stability": 0.010234417417609248,
+    "momentum": -2.219911242603547,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      -0.12153061224489778,
+      0.0
+    ],
+    "worldline_length": 18
+  },
+  {
+    "age": 60,
+    "coherence": 1.5217391304347827,
+    "id": 10670024,
+    "mass": 23.156899810964084,
+    "max_size": 10,
+    "mean_stability": 0.003939067149552277,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2222222222222223,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 1400,
+    "coherence": 1.6666666666666667,
+    "id": 6370010,
+    "mass": 30.55555555555556,
+    "max_size": 11,
+    "mean_stability": 0.021500142803555167,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.1818181818181819,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 370,
+    "coherence": 2.0,
+    "id": 9970000,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 1.5909505304201474,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 37
+  },
+  {
+    "age": 210,
+    "coherence": 2.0,
+    "id": 10410013,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 0.012435633949829446,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 21
+  },
+  {
+    "age": 160,
+    "coherence": 3.0,
+    "id": 10560010,
+    "mass": 27.0,
+    "max_size": 3,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 16
+  },
+  {
+    "age": 480,
+    "coherence": 1.6666666666666667,
+    "id": 9690006,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.3744592435092492,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 48
+  },
+  {
+    "age": 250,
+    "coherence": 1.5625,
+    "id": 10400006,
+    "mass": 19.53125,
+    "max_size": 8,
+    "mean_stability": 0.015451337391332972,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1071428571428572,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 450,
+    "coherence": 1.52,
+    "id": 9820026,
+    "mass": 43.8976,
+    "max_size": 19,
+    "mean_stability": 0.08188850321928372,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5555555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 45
+  },
+  {
+    "age": 50,
+    "coherence": 1.5046728971962617,
+    "id": 11000010,
+    "mass": 83.7694995196087,
+    "max_size": 37,
+    "mean_stability": 0.7408758525551153,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7582582582582582,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 5
+  },
+  {
+    "age": 410,
+    "coherence": 1.6666666666666667,
+    "id": 10310018,
+    "mass": 11.111111111111112,
+    "max_size": 4,
+    "mean_stability": 0.49564540646132865,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1666666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 41
+  },
+  {
+    "age": 800,
+    "coherence": 1.7,
+    "id": 9090003,
+    "mass": 20.229999999999997,
+    "max_size": 7,
+    "mean_stability": 3.70296170938678,
+    "momentum": 1.0283023255813946,
+    "particle_candidate": false,
+    "radius": 1.1904761904761905,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.05083056478405312,
+      0.0
+    ],
+    "worldline_length": 80
+  },
+  {
+    "age": 370,
+    "coherence": 1.564102564102564,
+    "id": 10450021,
+    "mass": 46.4819197896121,
+    "max_size": 19,
+    "mean_stability": 0.031241874188912094,
+    "momentum": 4.480567122020112,
+    "particle_candidate": false,
+    "radius": 1.6432748538011697,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.09639376218323584,
+      0.0
+    ],
+    "worldline_length": 37
+  },
+  {
+    "age": 200,
+    "coherence": 1.5625,
+    "id": 11000021,
+    "mass": 21.97265625,
+    "max_size": 9,
+    "mean_stability": 0.03075958937790033,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3055555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 20
+  },
+  {
+    "age": 680,
+    "coherence": 1.5263157894736843,
+    "id": 9780021,
+    "mass": 20.966759002770086,
+    "max_size": 9,
+    "mean_stability": 0.04259089051416843,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1944444444444444,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 68
+  },
+  {
+    "age": 300,
+    "coherence": 1.5789473684210527,
+    "id": 10780027,
+    "mass": 22.437673130193907,
+    "max_size": 9,
+    "mean_stability": 3.361592323085374,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1666666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 30
+  },
+  {
+    "age": 210,
+    "coherence": 1.507462686567164,
+    "id": 11080006,
+    "mass": 70.44575629316105,
+    "max_size": 31,
+    "mean_stability": 8.65381317623041,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.782795698924731,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 21
+  },
+  {
+    "age": 110,
+    "coherence": 1.5135135135135136,
+    "id": 11280010,
+    "mass": 87.04747991234478,
+    "max_size": 38,
+    "mean_stability": 0.7395368134684805,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7610241820768135,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 11
+  },
+  {
+    "age": 250,
+    "coherence": 1.53125,
+    "id": 11000028,
+    "mass": 37.515625,
+    "max_size": 16,
+    "mean_stability": 2.226665659814352,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5916666666666666,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 210,
+    "coherence": 1.5106382978723405,
+    "id": 11290006,
+    "mass": 50.204617473970124,
+    "max_size": 22,
+    "mean_stability": 10.282497481543663,
+    "momentum": 5.394347595874031,
+    "particle_candidate": false,
+    "radius": 1.6926406926406927,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.10744724025974044,
+      0.0
+    ],
+    "worldline_length": 21
+  },
+  {
+    "age": 240,
+    "coherence": 1.5416666666666667,
+    "id": 11380024,
+    "mass": 26.14409722222222,
+    "max_size": 11,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3272727272727274,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 24
+  },
+  {
+    "age": 90,
+    "coherence": 1.5294117647058822,
+    "id": 11800013,
+    "mass": 28.069204152249135,
+    "max_size": 13,
+    "mean_stability": 0.823714448589051,
+    "momentum": 7.491118800461362,
+    "particle_candidate": false,
+    "radius": 1.2121212121212122,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.26688034188034193,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 640,
+    "coherence": 1.5625,
+    "id": 10490020,
+    "mass": 19.53125,
+    "max_size": 8,
+    "mean_stability": 15.510000633288282,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1071428571428572,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 64
+  },
+  {
+    "age": 750,
+    "coherence": 1.6666666666666667,
+    "id": 10230009,
+    "mass": 13.888888888888891,
+    "max_size": 7,
+    "mean_stability": 1.716496130192509,
+    "momentum": -0.006925726265349418,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      -0.000498652291105158,
+      0.0
+    ],
+    "worldline_length": 75
+  },
+  {
+    "age": 2590,
+    "coherence": 1.5833333333333333,
+    "id": 4200007,
+    "mass": 17.54861111111111,
+    "max_size": 9,
+    "mean_stability": 0.4242187042819886,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 80,
+    "coherence": 1.5061728395061729,
+    "id": 11950026,
+    "mass": 65.78814205151653,
+    "max_size": 29,
+    "mean_stability": 5.600287339601111,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.6995073891625616,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 8
+  },
+  {
+    "age": 300,
+    "coherence": 1.6,
+    "id": 11390013,
+    "mass": 23.040000000000006,
+    "max_size": 9,
+    "mean_stability": 0.8390674353998214,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 30
+  },
+  {
+    "age": 120,
+    "coherence": 1.52,
+    "id": 12160023,
+    "mass": 41.5872,
+    "max_size": 18,
+    "mean_stability": 0.052241582363059584,
+    "momentum": 11.822417858220218,
+    "particle_candidate": false,
+    "radius": 1.5032679738562091,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.2842802078096197,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 1220,
+    "coherence": 1.5357142857142858,
+    "id": 9090018,
+    "mass": 33.017857142857146,
+    "max_size": 14,
+    "mean_stability": 0.09821196549886202,
+    "momentum": 1.2898230365864287,
+    "particle_candidate": true,
+    "radius": 1.5274725274725274,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.03906440781440779,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 800,
+    "coherence": 1.7272727272727273,
+    "id": 10450019,
+    "mass": 32.81818181818182,
+    "max_size": 11,
+    "mean_stability": 0.10596209969701388,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.309090909090909,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 80
+  },
+  {
+    "age": 390,
+    "coherence": 1.6666666666666667,
+    "id": 11430009,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.09092148175638744,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 39
+  },
+  {
+    "age": 390,
+    "coherence": 1.6666666666666667,
+    "id": 11590018,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 39
+  },
+  {
+    "age": 90,
+    "coherence": 1.5517241379310345,
+    "id": 12720020,
+    "mass": 28.894173602853748,
+    "max_size": 12,
+    "mean_stability": 0.03470247399641219,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3181818181818181,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 1340,
+    "coherence": 1.8,
+    "id": 9280002,
+    "mass": 16.200000000000003,
+    "max_size": 5,
+    "mean_stability": 16.46114099760434,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.1,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 2330,
+    "coherence": 2.0,
+    "id": 5830002,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 4.222970551437558,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 140,
+    "coherence": 1.5087719298245614,
+    "id": 12770020,
+    "mass": 47.80424746075715,
+    "max_size": 21,
+    "mean_stability": 0.07967041139500662,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5904761904761904,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 740,
+    "coherence": 1.6153846153846154,
+    "id": 11000000,
+    "mass": 28.70414201183432,
+    "max_size": 11,
+    "mean_stability": 0.6587477709543201,
+    "momentum": -0.09746671597633304,
+    "particle_candidate": false,
+    "radius": 1.2363636363636363,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      -0.003395562770562829,
+      0.0
+    ],
+    "worldline_length": 74
+  },
+  {
+    "age": 230,
+    "coherence": 1.6,
+    "id": 12600014,
+    "mass": 12.800000000000002,
+    "max_size": 5,
+    "mean_stability": 0.09590395901691141,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 23
+  },
+  {
+    "age": 250,
+    "coherence": 1.6153846153846154,
+    "id": 12560007,
+    "mass": 18.266272189349113,
+    "max_size": 7,
+    "mean_stability": 14.09201011194523,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 80,
+    "coherence": 1.5714285714285714,
+    "id": 13130027,
+    "mass": 19.755102040816325,
+    "max_size": 8,
+    "mean_stability": 3.70296170938678,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2142857142857142,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 8
+  },
+  {
+    "age": 840,
+    "coherence": 2.0,
+    "id": 10750004,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 84
+  },
+  {
+    "age": 170,
+    "coherence": 1.504,
+    "id": 13060024,
+    "mass": 92.742656,
+    "max_size": 41,
+    "mean_stability": 0.7348491065483679,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7707317073170732,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 17
+  },
+  {
+    "age": 950,
+    "coherence": 1.5384615384615385,
+    "id": 10670012,
+    "mass": 23.668639053254438,
+    "max_size": 11,
+    "mean_stability": 30.0,
+    "momentum": 0.865263362110777,
+    "particle_candidate": false,
+    "radius": 1.1111111111111112,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.03655737704918033,
+      0.0
+    ],
+    "worldline_length": 95
+  },
+  {
+    "age": 2450,
+    "coherence": 1.5833333333333333,
+    "id": 5930002,
+    "mass": 17.54861111111111,
+    "max_size": 8,
+    "mean_stability": 14.229435607926872,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 120,
+    "coherence": 2.0,
+    "id": 13470015,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 150,
+    "coherence": 1.5217391304347827,
+    "id": 13390016,
+    "mass": 76.41776937618148,
+    "max_size": 33,
+    "mean_stability": 0.10973160904963143,
+    "momentum": 6.403735320584204,
+    "particle_candidate": false,
+    "radius": 1.7348484848484849,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.08379903486924041,
+      0.0
+    ],
+    "worldline_length": 15
+  },
+  {
+    "age": 70,
+    "coherence": 1.5384615384615385,
+    "id": 13870024,
+    "mass": 33.13609467455621,
+    "max_size": 14,
+    "mean_stability": 0.7772550102249587,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3406593406593406,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 390,
+    "coherence": 1.588235294117647,
+    "id": 13060027,
+    "mass": 25.224913494809687,
+    "max_size": 10,
+    "mean_stability": 0.272359857862305,
+    "momentum": 4.711775226783874,
+    "particle_candidate": false,
+    "radius": 1.4,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.18679054054054042,
+      0.0
+    ],
+    "worldline_length": 39
+  },
+  {
+    "age": 140,
+    "coherence": 1.744186046511628,
+    "id": 14270024,
+    "mass": 51.71714440237966,
+    "max_size": 17,
+    "mean_stability": 0.7295320349181577,
+    "momentum": 14.229820173066539,
+    "particle_candidate": false,
+    "radius": 1.4485294117647058,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.27514705882352974,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 340,
+    "coherence": 1.5161290322580645,
+    "id": 13450011,
+    "mass": 25.28511966701353,
+    "max_size": 11,
+    "mean_stability": 0.3042006852744128,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1454545454545455,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 34
+  },
+  {
+    "age": 1130,
+    "coherence": 1.52,
+    "id": 11000018,
+    "mass": 34.656,
+    "max_size": 15,
+    "mean_stability": 0.41581610668893715,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.638095238095238,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 310,
+    "coherence": 1.588235294117647,
+    "id": 13700023,
+    "mass": 22.70242214532872,
+    "max_size": 9,
+    "mean_stability": 3.70296170938678,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.25,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 31
+  },
+  {
+    "age": 270,
+    "coherence": 1.5333333333333334,
+    "id": 13940011,
+    "mass": 32.91555555555556,
+    "max_size": 14,
+    "mean_stability": 1.2909715296488584,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4945054945054945,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 27
+  },
+  {
+    "age": 750,
+    "coherence": 1.5833333333333333,
+    "id": 12160029,
+    "mass": 17.54861111111111,
+    "max_size": 7,
+    "mean_stability": 2.6239986449104618,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0952380952380953,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 75
+  },
+  {
+    "age": 380,
+    "coherence": 1.5625,
+    "id": 13390024,
+    "mass": 19.53125,
+    "max_size": 8,
+    "mean_stability": 0.4151116009000766,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1071428571428572,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 38
+  },
+  {
+    "age": 220,
+    "coherence": 1.5076923076923077,
+    "id": 14200018,
+    "mass": 95.47171597633137,
+    "max_size": 42,
+    "mean_stability": 0.7313291756045897,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.7723577235772359,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 1170,
+    "coherence": 2.0,
+    "id": 10880010,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 0.5446844887983858,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 2140,
+    "coherence": 1.5217391304347827,
+    "id": 8200002,
+    "mass": 25.472589792060493,
+    "max_size": 18,
+    "mean_stability": 0.5356179843172979,
+    "momentum": 0.3273643810505816,
+    "particle_candidate": true,
+    "radius": 1.3636363636363635,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.012851633215269585,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 960,
+    "coherence": 1.5384615384615385,
+    "id": 12390007,
+    "mass": 30.76923076923077,
+    "max_size": 15,
+    "mean_stability": 0.823714448589051,
+    "momentum": 1.5260018280656158,
+    "particle_candidate": false,
+    "radius": 1.2307692307692308,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.04959505941213251,
+      0.0
+    ],
+    "worldline_length": 96
+  },
+  {
+    "age": 440,
+    "coherence": 1.65,
+    "id": 14400006,
+    "mass": 29.947499999999998,
+    "max_size": 11,
+    "mean_stability": 0.8258271653621932,
+    "momentum": 4.457899285714287,
+    "particle_candidate": false,
+    "radius": 1.4,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.1488571428571429,
+      0.0
+    ],
+    "worldline_length": 44
+  },
+  {
+    "age": 1620,
+    "coherence": 1.6,
+    "id": 10490025,
+    "mass": 25.600000000000005,
+    "max_size": 10,
+    "mean_stability": 0.8664977762935446,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.4666666666666666,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 380,
+    "coherence": 1.6666666666666667,
+    "id": 14730000,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 0.7702142547959351,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 38
+  },
+  {
+    "age": 1060,
+    "coherence": 1.5238095238095237,
+    "id": 12160022,
+    "mass": 20.897959183673464,
+    "max_size": 9,
+    "mean_stability": 0.9348751274092086,
+    "momentum": 1.442136558327035,
+    "particle_candidate": true,
+    "radius": 1.1111111111111112,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06900848765432102,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 560,
+    "coherence": 1.5625,
+    "id": 14200024,
+    "mass": 26.85546875,
+    "max_size": 11,
+    "mean_stability": 6.066428447070654,
+    "momentum": 1.5654032939189144,
+    "particle_candidate": false,
+    "radius": 1.5454545454545454,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.058289926289926124,
+      0.0
+    ],
+    "worldline_length": 56
+  },
+  {
+    "age": 420,
+    "coherence": 1.625,
+    "id": 14730006,
+    "mass": 15.84375,
+    "max_size": 6,
+    "mean_stability": 0.9033445271810326,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 42
+  },
+  {
+    "age": 1370,
+    "coherence": 2.0,
+    "id": 11210008,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 60,
+    "coherence": 1.606837606837607,
+    "id": 16020016,
+    "mass": 100.69515669515671,
+    "max_size": 39,
+    "mean_stability": 5.590581837255421,
+    "momentum": 37.97511160686531,
+    "particle_candidate": false,
+    "radius": 1.746288798920378,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.3771294752718912,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 110,
+    "coherence": 1.6666666666666667,
+    "id": 15750012,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 0.37083350824153566,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 11
+  },
+  {
+    "age": 550,
+    "coherence": 1.625,
+    "id": 14500008,
+    "mass": 18.484375,
+    "max_size": 7,
+    "mean_stability": 16.461140997604335,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.380952380952381,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 55
+  },
+  {
+    "age": 970,
+    "coherence": 1.6666666666666667,
+    "id": 12820019,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 1.2351020220824211,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 97
+  },
+  {
+    "age": 90,
+    "coherence": 1.5071428571428571,
+    "id": 16110022,
+    "mass": 99.94510204081632,
+    "max_size": 44,
+    "mean_stability": 0.7137307591776781,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.776955602536998,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 810,
+    "coherence": 1.5517241379310345,
+    "id": 13500018,
+    "mass": 28.894173602853748,
+    "max_size": 12,
+    "mean_stability": 1.3667351691834797,
+    "momentum": 2.6644081348148743,
+    "particle_candidate": false,
+    "radius": 1.3181818181818181,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.09221264367816087,
+      0.0
+    ],
+    "worldline_length": 81
+  },
+  {
+    "age": 70,
+    "coherence": 1.5555555555555556,
+    "id": 16330018,
+    "mass": 26.617283950617285,
+    "max_size": 11,
+    "mean_stability": 0.3134095219152353,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.490909090909091,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 800,
+    "coherence": 1.6666666666666667,
+    "id": 13940016,
+    "mass": 13.888888888888891,
+    "max_size": 5,
+    "mean_stability": 1.5909505304201474,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 80
+  },
+  {
+    "age": 120,
+    "coherence": 1.507936507936508,
+    "id": 16330012,
+    "mass": 45.477450239354994,
+    "max_size": 20,
+    "mean_stability": 0.7267162208783431,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 600,
+    "coherence": 1.6666666666666667,
+    "id": 14820018,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 1.7164961301925088,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 60
+  },
+  {
+    "age": 70,
+    "coherence": 1.5714285714285714,
+    "id": 16550022,
+    "mass": 19.755102040816325,
+    "max_size": 8,
+    "mean_stability": 1.3764247853686884,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2142857142857142,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 7
+  },
+  {
+    "age": 2350,
+    "coherence": 1.5555555555555556,
+    "id": 9280003,
+    "mass": 14.518518518518519,
+    "max_size": 6,
+    "mean_stability": 1.85194882469901,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0666666666666667,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 140,
+    "coherence": 1.5416666666666667,
+    "id": 16620007,
+    "mass": 28.520833333333336,
+    "max_size": 12,
+    "mean_stability": 0.8365701618525337,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4393939393939394,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 14
+  },
+  {
+    "age": 500,
+    "coherence": 1.5714285714285714,
+    "id": 15500025,
+    "mass": 24.693877551020407,
+    "max_size": 10,
+    "mean_stability": 3.693289642986069,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2666666666666666,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 50
+  },
+  {
+    "age": 2210,
+    "coherence": 1.565217391304348,
+    "id": 9900008,
+    "mass": 24.499054820415882,
+    "max_size": 16,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.2,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 120,
+    "coherence": 1.5121951219512195,
+    "id": 16890022,
+    "mass": 34.301011302795956,
+    "max_size": 15,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4095238095238096,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 12
+  },
+  {
+    "age": 220,
+    "coherence": 1.5454545454545454,
+    "id": 16890004,
+    "mass": 35.82644628099173,
+    "max_size": 15,
+    "mean_stability": 1.9737978639840321,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5142857142857142,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 260,
+    "coherence": 1.5357142857142858,
+    "id": 16810011,
+    "mass": 47.16836734693878,
+    "max_size": 20,
+    "mean_stability": 2.306547338566181,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5473684210526315,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 26
+  },
+  {
+    "age": 220,
+    "coherence": 1.5106382978723405,
+    "id": 17020014,
+    "mass": 47.92258940697148,
+    "max_size": 21,
+    "mean_stability": 2.2197263567080694,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.661904761904762,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 220,
+    "coherence": 1.5625,
+    "id": 17020021,
+    "mass": 21.97265625,
+    "max_size": 9,
+    "mean_stability": 2.529225743101018,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3055555555555556,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 1030,
+    "coherence": 1.5357142857142858,
+    "id": 14410016,
+    "mass": 25.94260204081633,
+    "max_size": 11,
+    "mean_stability": 3.9581341616070773,
+    "momentum": 1.800686330442722,
+    "particle_candidate": true,
+    "radius": 1.2181818181818183,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.06941039790880053,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 1400,
+    "coherence": 1.6363636363636365,
+    "id": 13060008,
+    "mass": 18.743801652892564,
+    "max_size": 7,
+    "mean_stability": 4.270479717170772,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.1428571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 250,
+    "coherence": 1.5714285714285714,
+    "id": 17190014,
+    "mass": 19.755102040816325,
+    "max_size": 8,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2142857142857142,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 25
+  },
+  {
+    "age": 470,
+    "coherence": 1.5454545454545454,
+    "id": 16620021,
+    "mass": 19.107438016528924,
+    "max_size": 8,
+    "mean_stability": 4.496260915977248,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3928571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 47
+  },
+  {
+    "age": 780,
+    "coherence": 1.565217391304348,
+    "id": 15670028,
+    "mass": 24.499054820415882,
+    "max_size": 10,
+    "mean_stability": 5.786570852523114,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 78
+  },
+  {
+    "age": 2710,
+    "coherence": 2.0,
+    "id": 9740013,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 6.735868202349241,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 360,
+    "coherence": 1.5179856115107915,
+    "id": 17230013,
+    "mass": 99.08405362041303,
+    "max_size": 43,
+    "mean_stability": 5.692057844802083,
+    "momentum": 5.629620753273772,
+    "particle_candidate": false,
+    "radius": 1.7663344407530455,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.056816617281733546,
+      0.0
+    ],
+    "worldline_length": 36
+  },
+  {
+    "age": 840,
+    "coherence": 1.5555555555555556,
+    "id": 15920019,
+    "mass": 19.358024691358025,
+    "max_size": 8,
+    "mean_stability": 7.267411199621563,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.5,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 84
+  },
+  {
+    "age": 220,
+    "coherence": 1.5185185185185186,
+    "id": 18150021,
+    "mass": 36.89437585733882,
+    "max_size": 16,
+    "mean_stability": 5.754215456534175,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.6583333333333334,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 500,
+    "coherence": 1.5454545454545454,
+    "id": 17190022,
+    "mass": 19.107438016528924,
+    "max_size": 8,
+    "mean_stability": 16.412480626247557,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3928571428571428,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 50
+  },
+  {
+    "age": 270,
+    "coherence": 1.5384615384615385,
+    "id": 18150024,
+    "mass": 26.035502958579883,
+    "max_size": 11,
+    "mean_stability": 6.668776456788522,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2727272727272727,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 27
+  },
+  {
+    "age": 350,
+    "coherence": 1.5044247787610618,
+    "id": 17870016,
+    "mass": 101.84822617276214,
+    "max_size": 45,
+    "mean_stability": 8.575529303945597,
+    "momentum": 7.593319591700157,
+    "particle_candidate": false,
+    "radius": 1.8282828282828283,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.07455524634096064,
+      0.0
+    ],
+    "worldline_length": 35
+  },
+  {
+    "age": 650,
+    "coherence": 1.55,
+    "id": 17090007,
+    "mass": 21.622500000000002,
+    "max_size": 9,
+    "mean_stability": 11.75687864907922,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1388888888888888,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 65
+  },
+  {
+    "age": 60,
+    "coherence": 1.6666666666666667,
+    "id": 19060011,
+    "mass": 16.666666666666668,
+    "max_size": 6,
+    "mean_stability": 4.128725024159093,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 560,
+    "coherence": 1.5555555555555556,
+    "id": 17780016,
+    "mass": 21.77777777777778,
+    "max_size": 9,
+    "mean_stability": 17.18789928024846,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2222222222222223,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 56
+  },
+  {
+    "age": 1600,
+    "coherence": 1.6153846153846154,
+    "id": 14560012,
+    "mass": 18.266272189349113,
+    "max_size": 7,
+    "mean_stability": 19.01972955326548,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 90,
+    "coherence": 1.5185185185185186,
+    "id": 19290022,
+    "mass": 25.36488340192044,
+    "max_size": 11,
+    "mean_stability": 5.448771040556153,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2545454545454546,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 9
+  },
+  {
+    "age": 220,
+    "coherence": 1.5185185185185186,
+    "id": 19260006,
+    "mass": 25.36488340192044,
+    "max_size": 11,
+    "mean_stability": 15.490233287448678,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2545454545454546,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 22
+  },
+  {
+    "age": 3190,
+    "coherence": 1.6666666666666667,
+    "id": 9900011,
+    "mass": 22.222222222222225,
+    "max_size": 9,
+    "mean_stability": 27.110636718749994,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.1071428571428572,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 620,
+    "coherence": 1.625,
+    "id": 18240003,
+    "mass": 15.84375,
+    "max_size": 6,
+    "mean_stability": 27.110636718749998,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.1333333333333333,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 62
+  },
+  {
+    "age": 990,
+    "coherence": 1.5263157894736843,
+    "id": 17100018,
+    "mass": 20.966759002770086,
+    "max_size": 9,
+    "mean_stability": 28.518750000000004,
+    "momentum": 2.3555247768544163,
+    "particle_candidate": false,
+    "radius": 1.1944444444444444,
+    "status": "dead",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.11234567901234564,
+      0.0
+    ],
+    "worldline_length": 99
+  },
+  {
+    "age": 100,
+    "coherence": 1.5555555555555556,
+    "id": 19620007,
+    "mass": 19.358024691358025,
+    "max_size": 8,
+    "mean_stability": 9.277006599693784,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 10
+  },
+  {
+    "age": 150,
+    "coherence": 1.9090909090909092,
+    "id": 19490019,
+    "mass": 25.51239669421488,
+    "max_size": 7,
+    "mean_stability": 12.639172577443047,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 15
+  },
+  {
+    "age": 320,
+    "coherence": 1.6875,
+    "id": 19130006,
+    "mass": 25.62890625,
+    "max_size": 9,
+    "mean_stability": 22.208699557928075,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.25,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 32
+  },
+  {
+    "age": 4660,
+    "coherence": 2.0,
+    "id": 5140007,
+    "mass": 16.0,
+    "max_size": 4,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 1920,
+    "coherence": 2.0,
+    "id": 14120013,
+    "mass": 40.0,
+    "max_size": 10,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.1555555555555554,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 500,
+    "coherence": 1.7333333333333334,
+    "id": 18660013,
+    "mass": 27.040000000000003,
+    "max_size": 9,
+    "mean_stability": 29.857830656262585,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2777777777777777,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 50
+  },
+  {
+    "age": 1200,
+    "coherence": 1.8888888888888888,
+    "id": 16550019,
+    "mass": 24.975308641975307,
+    "max_size": 8,
+    "mean_stability": 30.0,
+    "momentum": 2.100771604938272,
+    "particle_candidate": true,
+    "radius": 1.1904761904761905,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.08411393969352449,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 1640,
+    "coherence": 2.5,
+    "id": 15260020,
+    "mass": 31.25,
+    "max_size": 5,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 170,
+    "coherence": 1.8666666666666667,
+    "id": 19440012,
+    "mass": 31.360000000000003,
+    "max_size": 9,
+    "mean_stability": 13.6158864280736,
+    "momentum": 27.438444444444446,
+    "particle_candidate": false,
+    "radius": 1.2222222222222223,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.8749503968253968,
+      0.0
+    ],
+    "worldline_length": 17
+  },
+  {
+    "age": 910,
+    "coherence": 1.5555555555555556,
+    "id": 17400019,
+    "mass": 26.617283950617285,
+    "max_size": 11,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2363636363636363,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 91
+  },
+  {
+    "age": 690,
+    "coherence": 1.7777777777777777,
+    "id": 18170022,
+    "mass": 22.123456790123456,
+    "max_size": 7,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.2380952380952381,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 69
+  },
+  {
+    "age": 4380,
+    "coherence": 2.032258064516129,
+    "id": 6070009,
+    "mass": 74.34131113423517,
+    "max_size": 18,
+    "mean_stability": 28.444444444444443,
+    "momentum": 5.599382491565512,
+    "particle_candidate": true,
+    "radius": 1.6013071895424837,
+    "status": "alive",
+    "velocity": 6.811111111111131,
+    "velocity_avg": [
+      0.07531993189432627,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 1660,
+    "coherence": 1.7142857142857142,
+    "id": 15160005,
+    "mass": 26.448979591836732,
+    "max_size": 9,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.3333333333333333,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 950,
+    "coherence": 1.52,
+    "id": 17230026,
+    "mass": 39.2768,
+    "max_size": 17,
+    "mean_stability": 30.0,
+    "momentum": 1.9566981949458477,
+    "particle_candidate": false,
+    "radius": 1.4411764705882353,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.049818167339137805,
+      0.0
+    ],
+    "worldline_length": 95
+  },
+  {
+    "age": 690,
+    "coherence": 1.7692307692307692,
+    "id": 18170007,
+    "mass": 28.17159763313609,
+    "max_size": 9,
+    "mean_stability": 29.32469080355871,
+    "momentum": 3.3694308371326023,
+    "particle_candidate": false,
+    "radius": 1.3611111111111112,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.11960382513661202,
+      0.0
+    ],
+    "worldline_length": 69
+  },
+  {
+    "age": 1330,
+    "coherence": 1.8421052631578947,
+    "id": 16170016,
+    "mass": 33.933518005540165,
+    "max_size": 11,
+    "mean_stability": 30.0,
+    "momentum": 1.799042190831629,
+    "particle_candidate": true,
+    "radius": 1.2222222222222223,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.05301667190940556,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 80,
+    "coherence": 1.6923076923076923,
+    "id": 19680026,
+    "mass": 25.775147928994084,
+    "max_size": 9,
+    "mean_stability": 15.403752540387776,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.3888888888888888,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 8
+  },
+  {
+    "age": 390,
+    "coherence": 1.5555555555555556,
+    "id": 18940000,
+    "mass": 14.518518518518519,
+    "max_size": 6,
+    "mean_stability": 25.098156312292065,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0666666666666667,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 39
+  },
+  {
+    "age": 690,
+    "coherence": 1.5294117647058822,
+    "id": 18170011,
+    "mass": 32.74740484429066,
+    "max_size": 14,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4285714285714286,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 69
+  },
+  {
+    "age": 2600,
+    "coherence": 2.0,
+    "id": 11440005,
+    "mass": 32.0,
+    "max_size": 9,
+    "mean_stability": 30.0,
+    "momentum": 0.7454056132256813,
+    "particle_candidate": true,
+    "radius": 1.1428571428571428,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.02329392541330254,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 4520,
+    "coherence": 2.032258064516129,
+    "id": 5460000,
+    "mass": 74.34131113423517,
+    "max_size": 18,
+    "mean_stability": 28.444444444444443,
+    "momentum": 5.599382491565512,
+    "particle_candidate": true,
+    "radius": 1.6013071895424837,
+    "status": "alive",
+    "velocity": 6.811111111111131,
+    "velocity_avg": [
+      0.07531993189432627,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 2540,
+    "coherence": 1.7272727272727273,
+    "id": 11670005,
+    "mass": 20.884297520661157,
+    "max_size": 7,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": true,
+    "radius": 1.0952380952380953,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 100
+  },
+  {
+    "age": 170,
+    "coherence": 1.5555555555555556,
+    "id": 19440010,
+    "mass": 19.358024691358025,
+    "max_size": 8,
+    "mean_stability": 14.07927302688105,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 17
+  },
+  {
+    "age": 130,
+    "coherence": 1.6363636363636365,
+    "id": 19510011,
+    "mass": 32.13223140495868,
+    "max_size": 12,
+    "mean_stability": 12.269060065746261,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.4545454545454546,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 13
+  },
+  {
+    "age": 60,
+    "coherence": 3.75,
+    "id": 19750006,
+    "mass": 84.375,
+    "max_size": 6,
+    "mean_stability": 5.185327465820312,
+    "momentum": 28.15875000000002,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.33373333333333355,
+      0.0
+    ],
+    "worldline_length": 6
+  },
+  {
+    "age": 80,
+    "coherence": 1.7625,
+    "id": 19680003,
+    "mass": 111.830625,
+    "max_size": 36,
+    "mean_stability": 9.877980899690822,
+    "momentum": 28.200898953682994,
+    "particle_candidate": false,
+    "radius": 1.776190476190476,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.25217509920634884,
+      0.0
+    ],
+    "worldline_length": 8
+  },
+  {
+    "age": 830,
+    "coherence": 2.5,
+    "id": 17620003,
+    "mass": 31.25,
+    "max_size": 5,
+    "mean_stability": 30.0,
+    "momentum": 0.0,
+    "particle_candidate": false,
+    "radius": 1.0,
+    "status": "alive",
+    "velocity": 0.0,
+    "velocity_avg": [
+      0.0,
+      0.0
+    ],
+    "worldline_length": 83
+  }
+]

@@ -8,8 +8,8 @@ use crate::hypergraph::Hypergraph;
 use crate::physics_params::PhysicsParams;
 use crate::rules::{edge_creation_rule, UndoRecord};
 use crate::observables::{
-    worldline_interaction_graph, hierarchical_closure, TopologicalKnot, InteractionEvent, 
-    detect_candidate_knots, component_radius, compute_coherence_raw,
+    worldline_interaction_graph, compute_omega, TopologicalKnot, InteractionEvent, 
+    detect_candidate_knot_neighborhoods, component_radius, compute_coherence_raw,
 };
 
 #[derive(Serialize, Clone)]
@@ -30,8 +30,6 @@ pub struct RewriteEngine {
     // Physics params
     pub gamma_time: f64,
     pub gamma_ext: f64,
-    pub gamma_closure: f64,
-    pub gamma_hier: f64,
     pub epsilon_label_violation: f64,
     pub params: PhysicsParams,
 
@@ -68,7 +66,6 @@ pub struct RewriteEngine {
 
     // caching
     cached_inter: Option<HashMap<u64, HashSet<u64>>>,
-    cached_omega: Option<f64>,
     
     // probes
     pending_bridge: Option<(u64, u64)>,
@@ -81,9 +78,11 @@ pub struct RewriteEngine {
     // Per-vertex stability memory: accumulates for vertices in coherent structures
     pub stability: HashMap<u64, f64>,
     
-    // Phase 8: Coupling Pulse tracking
     pub coupled_vertices: HashSet<u64>,
     pub active_interactions: HashMap<(u64, u64), InteractionEvent>,
+    
+    // Pure Mode flag
+    pub pure_mode: bool,
 }
 
 
@@ -98,8 +97,6 @@ impl RewriteEngine {
             p_create,
             gamma_time: 0.1,
             gamma_ext: 0.05,
-            gamma_closure: 0.05,
-            gamma_hier: 0.06,
             epsilon_label_violation: 0.08,
             params: PhysicsParams::new(),
             
@@ -130,7 +127,6 @@ impl RewriteEngine {
             print_interval: 50,
             
             cached_inter: None,
-            cached_omega: None,
             pending_bridge: None,
             pending_bridge_time: None,
             
@@ -140,6 +136,7 @@ impl RewriteEngine {
             stability: HashMap::new(),
             coupled_vertices: HashSet::new(),
             active_interactions: HashMap::new(),
+            pure_mode: false,
         }
     }
 
@@ -156,11 +153,11 @@ impl RewriteEngine {
         } else {
             worldline_interaction_graph(&self.h, 0.0)
         };
-        
-        let omega_before = self.cached_omega.unwrap_or(0.0);
 
-        // Experiment C: Spontaneous Vacuum Nucleation
-        if self.params.defect_injection > 0.0 {
+
+
+        // Experiment C: Spontaneous Vacuum Nucleation (Bypassed in Pure Mode)
+        if !self.pure_mode && self.params.defect_injection > 0.0 {
             let mut rng = rand::thread_rng();
             if rng.gen::<f64>() < self.params.defect_injection {
                 let v1 = self.h.add_vertex();
@@ -205,87 +202,53 @@ impl RewriteEngine {
             old_causal: HashMap::new(),
         });
 
-        // ---------------------------------
-        // Tentative interaction graph
-        // ---------------------------------
         let inter_after = worldline_interaction_graph(&self.h, 0.0);
-        
-        if self.time % 200 == 0 {
-            if self.verbose {
-                println!("[debug] interaction nodes = {}", inter_after.len());
-            }
-        }
-
-        let omega_after = if self.time % 50 == 0 {
-            hierarchical_closure(&self.h, &inter_after)
-        } else {
-            omega_before
-        };
-        
-        let delta_omega = omega_after - omega_before;
 
         // ---------------------------------
         // Acceptance rule
         // ---------------------------------
-        let mut accept_prob = 1.0;
-        if delta_omega.abs() > self.epsilon_label_violation {
-            let v_len = self.h.vertices.len() as f64;
-            let gamma = self.params.gamma_defect * (-v_len / 800.0).exp();
-            accept_prob *= (-gamma * delta_omega.abs()).exp();
-        }
-
-        // Experiment B: Targeted Metropolis-Hastings Noise Bias
-        if self.params.noise_bias > 0.0 && delta_omega > 0.0 {
-            accept_prob *= (self.params.noise_bias * delta_omega).exp();
-            if accept_prob > 1.0 { accept_prob = 1.0; }
-        }
+        let accept_prob = 1.0;
 
         let mut rng = rand::thread_rng();
         let accepted = rng.gen::<f64>() <= accept_prob;
-        let omega_print;
 
         if !accepted {
             self.undo_changes(undo);
             self.cached_inter = Some(inter_before);
-            self.cached_omega = Some(omega_before);
-            omega_print = omega_before;
         } else {
             // Cache accepted state
             self.cached_inter = Some(inter_after.clone());
-            self.cached_omega = Some(omega_after);
-            omega_print = omega_after;
 
             // -----------------------------
-            // ξ inheritance
+            // ξ inheritance & propagation (Bypassed in Pure Mode)
             // -----------------------------
-            let touched = self.touched_vertices();
-            let mut parents = Vec::new();
-            for p in &touched {
-                if let Some(&val) = self.xi.get(p) {
-                    if val > self.xi_threshold {
-                        parents.push(*p);
-                    }
-                }
-            }
-            
-            if let Some(lr) = &self.last_rewrite {
-                for &vid in &lr.added_vertices {
-                    if !parents.is_empty() {
-                        let mut sum_xi = 0.0;
-                        for &p in &parents {
-                            sum_xi += self.xi.get(&p).unwrap_or(&0.0);
+            if !self.pure_mode {
+                let touched = self.touched_vertices();
+                let mut parents = Vec::new();
+                for p in &touched {
+                    if let Some(&val) = self.xi.get(p) {
+                        if val > self.xi_threshold {
+                            parents.push(*p);
                         }
-                        let inherited = sum_xi / parents.len() as f64;
-                        *self.xi.entry(vid).or_insert(0.0) += 0.5 * inherited;
                     }
                 }
-            }
+                
+                if let Some(lr) = &self.last_rewrite {
+                    for &vid in &lr.added_vertices {
+                        if !parents.is_empty() {
+                            let mut sum_xi = 0.0;
+                            for &p in &parents {
+                                sum_xi += self.xi.get(&p).unwrap_or(&0.0);
+                            }
+                            let inherited = sum_xi / parents.len() as f64;
+                            *self.xi.entry(vid).or_insert(0.0) += 0.5 * inherited;
+                        }
+                    }
+                }
 
-            // -----------------------------
-            // ξ propagation
-            // -----------------------------
-            let xi_clusters = self.xi_clusters(&inter_after);
-            self.propagate_xi(&inter_after, &xi_clusters);
+                let xi_clusters = self.xi_clusters(&inter_after);
+                self.propagate_xi(&inter_after, &xi_clusters);
+            }
             
             let geom_inter = inter_after.clone();
             
@@ -324,6 +287,7 @@ impl RewriteEngine {
             if self.time % 10 == 0 {
                 self.update_topological_knots(&geom_inter);
                 self.update_stability(&geom_inter);
+                self.perform_kinematics_and_interactions(&geom_inter);
             }
         }
 
@@ -345,11 +309,17 @@ impl RewriteEngine {
                 self.suppressed_rewrites as f64 / self.attempted_rewrites as f64
             } else { 0.0 };
 
+            // IMPORTANT:
+            // Ω (hierarchical closure) is a derived observable computed from the
+            // instantaneous interaction graph. It does NOT influence rewrite dynamics
+            // and has no causal propagation. It is used only for diagnostics.
+            let omega = compute_omega(&inter_after);
+
             println!(
                 "[engine] t={} step={:.2}ms Ω={:.6} knots={} geom_pairs={} supp_ratio={:.3}",
                 self.time,
                 self.last_step_time * 1000.0,
-                omega_print,
+                omega,
                 valid_knots,
                 geom_pairs,
                 supp_ratio
@@ -364,22 +334,39 @@ impl RewriteEngine {
     }
 
     pub fn update_topological_knots(&mut self, inter: &HashMap<u64, HashSet<u64>>) {
-        let candidates = detect_candidate_knots(&self.h, inter, 1.2);
+        Self::process_knot_update_static(
+            &self.h,
+            inter,
+            &mut self.active_knots,
+            &mut self.dead_knots,
+            &mut self.next_knot_id,
+            &self.stability,
+            self.time,
+            1.2, // Default coherence threshold
+            0.3, // Default tracking overlap threshold
+        );
+        
+        // Post-tracking kinematics (still depends on engine state for interactions)
+        self.perform_kinematics_and_interactions(inter);
+    }
 
+    pub fn process_knot_update_static(
+        h: &Hypergraph,
+        inter: &HashMap<u64, HashSet<u64>>,
+        active_knots: &mut HashMap<u64, TopologicalKnot>,
+        dead_knots: &mut Vec<TopologicalKnot>,
+        next_knot_id: &mut u64,
+        _stability: &HashMap<u64, f64>,
+        current_time: usize,
+        min_coherence: f64,
+        overlap_threshold: f64,
+    ) {
+        let candidates = detect_candidate_knot_neighborhoods(h, inter, min_coherence);
         let mut next_active_knots = HashMap::new();
         
-        // Step 1: Track matches for velocity and pre-stats
-        let mut knot_pre_stats: HashMap<u64, (f64, usize, f64)> = HashMap::new();
-        for (id, knot) in &self.active_knots {
-            let stab = knot.vertices.iter()
-                .map(|v| self.stability.get(v).copied().unwrap_or(0.0))
-                .sum::<f64>() / (knot.vertices.len() as f64).max(1.0);
-            knot_pre_stats.insert(*id, (knot.coherence, knot.vertices.len(), stab));
-        }
-
-        // Step 2: Update existing knots
+        // Step 1: Update existing knots
         let mut matched_candidates = HashSet::new();
-        for (_, knot) in &self.active_knots {
+        for (_, knot) in active_knots.iter() {
             let mut best_idx = None;
             let mut best_overlap = 0.0;
             
@@ -388,7 +375,7 @@ impl RewriteEngine {
                 let min_s = knot.vertices.len().min(cand.len()) as f64;
                 let overlap = if min_s > 0.0 { intersection / min_s } else { 0.0 };
                 
-                if overlap > 0.3 && overlap > best_overlap {
+                if overlap > overlap_threshold && overlap > best_overlap {
                     best_overlap = overlap;
                     best_idx = Some(i);
                 }
@@ -409,12 +396,11 @@ impl RewriteEngine {
                 if cand.len() > updated_knot.max_size { updated_knot.max_size = cand.len(); }
                 if cand.len() < updated_knot.min_size { updated_knot.min_size = cand.len(); }
                 
-                // Velocity: dist between centroids / time step
                 let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / cand.len() as f64;
                 let prev_pos = knot.position_history.last().map(|(_, p, _)| *p).unwrap_or(mean_pos);
                 updated_knot.velocity = (mean_pos - prev_pos).abs() / 10.0;
                 
-                updated_knot.position_history.push((self.time, mean_pos, coherence));
+                updated_knot.position_history.push((current_time, mean_pos, coherence));
                 if updated_knot.position_history.len() > 100 {
                     updated_knot.position_history.drain(..updated_knot.position_history.len()-100);
                 }
@@ -422,16 +408,50 @@ impl RewriteEngine {
                 next_active_knots.insert(updated_knot.id, updated_knot);
             } else {
                 if knot.age >= 50 {
-                    self.dead_knots.push(knot.clone());
+                    dead_knots.push(knot.clone());
                 }
             }
         }
 
+        // Step 2: Spawn new knots from unmatched candidates
+        for (idx, cand) in candidates.iter().enumerate() {
+            if matched_candidates.contains(&idx) { continue; }
+            
+            let (ie, be) = compute_coherence_raw(cand, inter);
+            let coherence = if be > 0 { ie as f64 / be as f64 } 
+                            else if ie > 0 { 10.0 } else { 0.0 };
+            
+            // Only spawn if it meets structural criteria
+            if coherence > min_coherence {
+                let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / cand.len() as f64;
+                let new_knot = TopologicalKnot {
+                    id: *next_knot_id,
+                    vertices: cand.clone(),
+                    age: 10,
+                    radius: component_radius(cand, inter),
+                    max_size: cand.len(),
+                    min_size: cand.len(),
+                    coherence,
+                    velocity: 0.0,
+                    velocity_avg: (0.0, 0.0),
+                    mass: cand.len() as f64 * coherence.powi(2),
+                    momentum: 0.0,
+                    position_history: vec![(current_time, mean_pos, coherence)],
+                };
+                next_active_knots.insert(new_knot.id, new_knot);
+                *next_knot_id += 1;
+            }
+        }
+
+        *active_knots = next_active_knots;
+    }
+
+    fn perform_kinematics_and_interactions(&mut self, _inter: &HashMap<u64, HashSet<u64>>) {
         // Step 3: Formal Kinematics
         self.coupled_vertices.clear();
-        let active_ids: Vec<_> = next_active_knots.keys().copied().collect();
+        let active_ids: Vec<_> = self.active_knots.keys().copied().collect();
         for &id in &active_ids {
-            let knot = next_active_knots.get_mut(&id).unwrap();
+            let knot = self.active_knots.get_mut(&id).unwrap();
             knot.mass = knot.vertices.len() as f64 * knot.coherence.powi(2);
             let hist = &knot.position_history;
             if hist.len() > 1 {
@@ -451,31 +471,47 @@ impl RewriteEngine {
             for j in i+1..active_ids.len() {
                 let id_a = active_ids[i];
                 let id_b = active_ids[j];
-                let knot_a = &next_active_knots[&id_a];
-                let knot_b = &next_active_knots[&id_b];
+                let knot_a = &self.active_knots[&id_a];
+                let knot_b = &self.active_knots[&id_b];
                 
                 let intersection = knot_a.vertices.intersection(&knot_b.vertices).count();
                 if intersection > 0 {
                     let pair = if id_a < id_b { (id_a, id_b) } else { (id_b, id_a) };
-                    current_overlaps.insert(pair);
-                    
                     let chi = intersection as f64 / (knot_a.vertices.len().min(knot_b.vertices.len()) as f64);
-                    let res = (2.0 * knot_a.coherence * knot_b.coherence) / 
-                              (knot_a.coherence.powi(2) + knot_b.coherence.powi(2)).max(1e-6);
+                    
+                    // Noise filter for active engagement
+                    if chi > 0.015 {
+                        current_overlaps.insert(pair);
+                        
+                        if !self.active_interactions.contains_key(&pair) {
+                            let m_a = knot_a.mass;
+                            let m_b = knot_b.mass;
+                            let res = (2.0 * knot_a.coherence * knot_b.coherence) / 
+                                      (knot_a.coherence.powi(2) + knot_b.coherence.powi(2)).max(1e-6);
 
-                    if !self.active_interactions.contains_key(&pair) {
-                        let pre_a_tuple = knot_pre_stats.get(&id_a).cloned().unwrap_or((0.0, 0, 0.0));
-                        let pre_b_tuple = knot_pre_stats.get(&id_b).cloned().unwrap_or((0.0, 0, 0.0));
-                        let m_a = pre_a_tuple.1 as f64 * pre_a_tuple.0.powi(2);
-                        let m_b = pre_b_tuple.1 as f64 * pre_b_tuple.0.powi(2);
+                            let stab_a = knot_a.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / knot_a.vertices.len() as f64;
+                            let stab_b = knot_b.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / knot_b.vertices.len() as f64;
+                            
+                            let (int_a, bnd_a) = compute_coherence_raw(&knot_a.vertices, _inter);
+                            let ratio_a = int_a as f64 / (int_a + bnd_a).max(1) as f64;
+                            let (int_b, bnd_b) = compute_coherence_raw(&knot_b.vertices, _inter);
+                            let ratio_b = int_b as f64 / (int_b + bnd_b).max(1) as f64;
 
-                        self.active_interactions.insert(pair, InteractionEvent {
-                            time: self.time, knot_a: id_a, knot_b: id_b, overlap_size: intersection,
-                            overlap_depth: chi, resonance: res,
-                            pre_a: (m_a, knot_a.velocity, m_a * knot_a.velocity, knot_a.velocity_avg),
-                            pre_b: (m_b, knot_b.velocity, m_b * knot_b.velocity, knot_b.velocity_avg),
-                            post_a: None, post_b: None,
-                        });
+                            self.active_interactions.insert(pair, InteractionEvent {
+                                start_time: self.time, end_time: None, duration: 0,
+                                knot_a: id_a, knot_b: id_b, overlap_size: intersection,
+                                overlap_depth: chi, resonance: res,
+                                pre_a: (m_a, knot_a.velocity, m_a * knot_a.velocity_avg.0, knot_a.velocity_avg, knot_a.coherence, stab_a, knot_a.radius, knot_a.vertices.len(), ratio_a),
+                                pre_b: (m_b, knot_b.velocity, m_b * knot_b.velocity_avg.0, knot_b.velocity_avg, knot_b.coherence, stab_b, knot_b.radius, knot_b.vertices.len(), ratio_b),
+                                post_a: None, post_b: None,
+                                steps_below_threshold: 0,
+                            });
+                        } else {
+                            // Update max chi seen during interaction
+                            let event = self.active_interactions.get_mut(&pair).unwrap();
+                            if chi > event.overlap_depth { event.overlap_depth = chi; }
+                            event.steps_below_threshold = 0;
+                        }
                     }
                     
                     if chi > 0.4 {
@@ -486,64 +522,47 @@ impl RewriteEngine {
             }
         }
 
-        // Finalize interactions that have ended
+        // Finalize interactions that have ended (stability window)
         let mut finished = Vec::new();
-        for (&pair, ev) in &mut self.active_interactions {
-            if !current_overlaps.contains(&pair) {
-                let (id_a, id_b) = pair;
-                if let Some(k_a) = next_active_knots.get(&id_a) {
-                    ev.post_a = Some((k_a.mass, k_a.velocity, k_a.momentum, k_a.velocity_avg));
-                }
-                if let Some(k_b) = next_active_knots.get(&id_b) {
-                    ev.post_b = Some((k_b.mass, k_b.velocity, k_b.momentum, k_b.velocity_avg));
-                }
-                finished.push(pair);
-            }
-        }
-        for pair in finished {
-            if let Some(ev) = self.active_interactions.remove(&pair) {
-                self.interaction_events.push(ev);
-            }
-        }
-        
-        // Step 4: Handle new candidates
-        for (idx, cand) in candidates.iter().enumerate() {
-            if !matched_candidates.contains(&idx) {
-                let (ie, be) = compute_coherence_raw(cand, inter);
-                let coherence = if be > 0 { ie as f64 / be as f64 } 
-                                else if ie > 0 { 10.0 } else { 0.0 };
-                
-                if coherence > 1.1 || cand.len() > 10 {
-                    let mut new_knot = TopologicalKnot {
-                        id: self.time as u64 * 1000 + idx as u64,
-                        vertices: cand.clone(),
-                        age: 10,
-                        max_size: cand.len(),
-                        min_size: cand.len(),
-                        radius: component_radius(cand, inter),
-                        coherence,
-                        velocity: 0.0,
-                        velocity_avg: (0.0, 0.0),
-                        mass: cand.len() as f64 * coherence.powi(2),
-                        momentum: 0.0,
-                        position_history: Vec::new(),
-                    };
-                    let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / cand.len() as f64;
-                    new_knot.position_history.push((self.time, mean_pos, coherence));
-                    next_active_knots.insert(new_knot.id, new_knot);
+        for (pair, event) in self.active_interactions.iter_mut() {
+            if !current_overlaps.contains(pair) {
+                event.steps_below_threshold += 1;
+                // Since this check runs every 10 simulation steps, 1 check = 10 steps > threshold 5.
+                if event.steps_below_threshold >= 1 {
+                    finished.push(*pair);
                 }
             }
         }
 
-        
-        self.active_knots = next_active_knots;
+        for pair in finished {
+            let mut event = self.active_interactions.remove(&pair).unwrap();
+            event.end_time = Some(self.time);
+            event.duration = self.time.saturating_sub(event.start_time);
+            
+            // Capture post state
+            if let Some(ka) = self.active_knots.get(&event.knot_a) {
+                let stab = ka.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / ka.vertices.len() as f64;
+                let (int, bnd) = compute_coherence_raw(&ka.vertices, _inter);
+                let ratio = int as f64 / (int + bnd).max(1) as f64;
+                event.post_a = Some((ka.mass, ka.velocity, ka.mass * ka.velocity_avg.0, ka.velocity_avg, ka.coherence, stab, ka.radius, ka.vertices.len(), ratio));
+            }
+            if let Some(kb) = self.active_knots.get(&event.knot_b) {
+                let stab = kb.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / kb.vertices.len() as f64;
+                let (int, bnd) = compute_coherence_raw(&kb.vertices, _inter);
+                let ratio = int as f64 / (int + bnd).max(1) as f64;
+                event.post_b = Some((kb.mass, kb.velocity, kb.mass * kb.velocity_avg.0, kb.velocity_avg, kb.coherence, stab, kb.radius, kb.vertices.len(), ratio));
+            }
+            
+            self.interaction_events.push(event);
+        }
     }
 
     /// Update per-vertex stability memory.
     /// Vertices inside active knots accumulate stability.
     /// All stability values decay slowly each cycle.
     fn update_stability(&mut self, _inter: &HashMap<u64, HashSet<u64>>) {
-        let stability_decay = 0.975; // Lowered to push back to critical regime (was 0.985)
+        // (1) Stability Decay (nu)
+        let stability_decay = self.params.stability_decay;
         let stability_gain = 1.0;
         
         // Decay all existing stability
@@ -579,6 +598,16 @@ impl RewriteEngine {
         let vertices: Vec<u64> = self.h.vertices.keys().copied().collect();
         if vertices.is_empty() { return None; }
         let anchor_v = *vertices.choose(&mut rng).unwrap();
+
+        // --- Pure Mode Bypass ---
+        if self.pure_mode {
+            // Uniformly pick between edge creation (p_create) and vertex fusion
+            if rng.gen::<f64>() < 0.9 {
+                return crate::rules::edge_creation_rule(&mut self.h, Some(anchor_v), self.p_create);
+            } else {
+                 return crate::rules::vertex_fusion_rule(&mut self.h, Some(anchor_v));
+            }
+        }
 
         // --- Density metric ---
         let clustering = crate::observables::local_clustering(inter, anchor_v);
@@ -642,8 +671,8 @@ impl RewriteEngine {
         
         // Nonlinear memory: stability^γ creates threshold effect
         // Low stability ≈ no protection, high stability ≈ strong protection
-        let mu = 0.3; // memory coupling
-        let gamma = 2.2; // Phase 10b: Production target (alpha ≈ 2.26)
+        let mu = self.params.memory_coupling;
+        let gamma = self.params.nonlinear_coupling;
         let stability_cap = 30.0_f64;
         let vertex_stability = self.stability.get(&anchor_v).copied().unwrap_or(0.0);
         let normalized_stability = (vertex_stability / stability_cap).min(1.0);

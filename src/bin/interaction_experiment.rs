@@ -5,7 +5,7 @@ use std::io::Write;
 
 use hcsn_rust::hypergraph::Hypergraph;
 use hcsn_rust::rewrite_engine::RewriteEngine;
-use hcsn_rust::observables::{worldline_interaction_graph, hierarchical_closure};
+use hcsn_rust::observables::{worldline_interaction_graph, compute_omega};
 
 const STABILIZE_STEPS_BEFORE_PROBE: usize = 150;
 const INTERACTION_STEPS: usize = 1500;
@@ -28,7 +28,7 @@ fn main() {
     loop {
         engine.step();
         let inter = worldline_interaction_graph(&engine.h, 0.0);
-        let omega = hierarchical_closure(&engine.h, &inter);
+        let omega = compute_omega(&inter);
         if (omega - OMEGA_TARGET).abs() < OMEGA_TOL {
             break;
         }
@@ -92,7 +92,7 @@ fn main() {
         
         let t2 = Instant::now();
         
-        let omega = hierarchical_closure(&engine.h, &inter);
+        let omega = compute_omega(&inter);
 
         interaction_log.push(json!({
             "t": engine.time,

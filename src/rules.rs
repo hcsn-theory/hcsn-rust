@@ -2,17 +2,22 @@ use std::collections::{HashMap, HashSet};
 use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::hypergraph::{Hypergraph, Hyperedge, Vertex};
+use fixedbitset::FixedBitSet;
 
 /// Explict struct to replace Python's dynamic undo dictionary
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct UndoRecord {
+    pub target: Vec<u64>,
     pub added_vertices: Vec<u64>,
     pub added_edges: Vec<u64>,
     pub added_causal: Vec<(u64, u64)>,
     pub removed_vertex: Option<Vertex>,
     pub kept_vertex: Option<u64>,
     pub removed_edges: HashMap<u64, Hyperedge>,
-    pub old_causal: HashMap<u64, HashSet<u64>>,
+    pub old_causal_future: HashMap<u64, FixedBitSet>,
+    pub old_causal_past: HashMap<u64, FixedBitSet>,
+    pub old_parents: HashMap<u64, Vec<u64>>,
+    pub old_children: HashMap<u64, Vec<u64>>,
 }
 
 pub fn edge_creation_rule(
@@ -90,6 +95,7 @@ pub fn edge_creation_rule(
     new_edge_vertices.push(new_vertex_id);
     let e = h.add_hyperedge(new_edge_vertices);
     undo.added_edges.push(e.id);
+    undo.target = edge.vertices.clone();
 
     Some(undo)
 }
@@ -131,25 +137,46 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     }
 
     let mut undo = UndoRecord::default();
+    undo.target = vec![v_remove_id];
     undo.kept_vertex = Some(v_keep_id);
     let v_remove = h.vertices.get(&v_remove_id).unwrap().clone();
     undo.removed_vertex = Some(v_remove);
 
-    // log causal relations
-    for u in h.vertices.values() {
-        if h.is_causally_related(u.id, v_remove_id) {
-            undo.old_causal.insert(u.id, h.causal_order.get(&u.id).cloned().unwrap_or_default());
+    // log causal relations and adjacency
+    for u_id in h.vertices.keys().cloned().collect::<Vec<_>>() {
+        if h.is_causally_related(u_id, v_remove_id) {
+            if let Some(fb) = h.causal_future_bitset(u_id) {
+                undo.old_causal_future.insert(u_id, fb);
+            }
+            if let Some(pb) = h.causal_past_bitset(u_id) {
+                undo.old_causal_past.insert(u_id, pb);
+            }
+            if let Some(v) = h.vertices.get(&u_id) {
+                undo.old_parents.insert(u_id, v.parents.clone());
+                undo.old_children.insert(u_id, v.children.clone());
+            }
         }
     }
 
-    // redirect causal relations
-    for u_id in h.vertices.keys().cloned().collect::<Vec<_>>() {
-        if h.is_causally_related(u_id, v_remove_id) {
-            if let Some(set) = h.causal_order.get_mut(&u_id) {
-                set.insert(v_keep_id);
-                set.remove(&v_remove_id);
-            }
+    // Since we are removing v_remove_id, we need to manually update 1-hop adjacency of its neighbors
+    let parents = h.vertices.get(&v_remove_id).unwrap().parents.clone();
+    let children = h.vertices.get(&v_remove_id).unwrap().children.clone();
+    
+    h.merge_causal_identity(v_keep_id, v_remove_id);
+
+    for p_id in parents {
+        if let Some(p) = h.vertices.get_mut(&p_id) {
+            p.children.retain(|&id| id != v_remove_id);
+            p.children.push(v_keep_id);
         }
+        h.add_causal_relation(p_id, v_keep_id);
+    }
+    for c_id in children {
+        if let Some(c) = h.vertices.get_mut(&c_id) {
+            c.parents.retain(|&id| id != v_remove_id);
+            c.parents.push(v_keep_id);
+        }
+        h.add_causal_relation(v_keep_id, c_id);
     }
 
     // remove edges containing v_remove_id
@@ -168,7 +195,8 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
 
     // remove vertex
     h.vertices.remove(&v_remove_id);
-    h.causal_order.remove(&v_remove_id);
+    h.causal_future.remove(&v_remove_id);
+    h.causal_past.remove(&v_remove_id);
 
     Some(undo)
 }

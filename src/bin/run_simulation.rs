@@ -5,9 +5,13 @@ use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::{
     worldline_interaction_graph,
     compute_omega,
+    compute_coherence_raw,
+    detect_candidate_knot_neighborhoods,
 };
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::fs::OpenOptions;
+use std::io::Write;
 
 #[derive(Serialize)]
 struct Config {
@@ -18,6 +22,7 @@ struct Config {
     noise_bias: f64,
     defect_injection: f64,
     geometry_freeze: f64,
+    log_file: Option<String>,
 }
 
 fn save_data(engine: &RewriteEngine, config: &Config) {
@@ -95,6 +100,7 @@ fn main() {
         noise_bias: 0.0,
         defect_injection: 0.0,
         geometry_freeze: 0.9,
+        log_file: None,
     };
 
     let args: Vec<String> = std::env::args().collect();
@@ -109,8 +115,21 @@ fn main() {
         } else if args[arg_idx] == "--seed" && arg_idx + 1 < args.len() {
             if let Ok(s) = args[arg_idx+1].parse::<u64>() { config.seed = s; }
             arg_idx += 2;
+        } else if args[arg_idx] == "--log-to" && arg_idx + 1 < args.len() {
+            config.log_file = Some(args[arg_idx+1].clone());
+            arg_idx += 2;
         } else {
             arg_idx += 1;
+        }
+    }
+
+    // Auto-discovery of Gantry logs directory
+    if config.log_file.is_none() {
+        let gantry_logs = std::path::PathBuf::from("/home/saif/antigravity/gantry/logs");
+        if gantry_logs.exists() {
+            let auto_path = gantry_logs.join(format!("auto_sim_{}_{}.jsonl", std::process::id(), config.seed));
+            config.log_file = Some(auto_path.to_str().unwrap().to_string());
+            println!("[AUTO-LOG] Gantry directory detected. Tracking enabled: {}", config.log_file.as_ref().unwrap());
         }
     }
 
@@ -173,24 +192,12 @@ fn main() {
             let valid_knots = engine.active_knots.values().filter(|k| k.age >= 50 && k.radius < 5.0).count();
             let total_knots = engine.active_knots.len();
 
+            let candidates = detect_candidate_knot_neighborhoods(&engine.h, &inter, 0.0);
             let mut max_coh: f64 = 0.0;
-            for &v in engine.h.vertices.keys() {
-                if let Some(neighbors) = inter.get(&v) {
-                    let mut neighborhood = neighbors.clone();
-                    neighborhood.insert(v);
-                    let mut ie: u32 = 0;
-                    let mut be: u32 = 0;
-                    for &n in &neighborhood {
-                        if let Some(n_nbrs) = inter.get(&n) {
-                            for &nn in n_nbrs {
-                                if neighborhood.contains(&nn) { ie += 1; } else { be += 1; }
-                            }
-                        }
-                    }
-                    ie /= 2;
-                    let coh = if be > 0 { ie as f64 / be as f64 } else if ie > 0 { 10.0 } else { 0.0 };
-                    if coh > max_coh { max_coh = coh; }
-                }
+            for cand in candidates {
+                let (ie, be) = compute_coherence_raw(&cand, &inter);
+                let coh = if be > 0 { ie as f64 / be as f64 } else if ie > 0 { 10.0 } else { 0.0 };
+                if coh > max_coh { max_coh = coh; }
             }
 
             let step_ms = last_print_time.elapsed().as_millis();
@@ -202,9 +209,26 @@ fn main() {
                 acc_ratio * 100.0, omega, valid_knots, total_knots, max_coh, step_ms
             );
 
-            last_k = k;
-            last_l = l;
             last_omega = omega;
+
+            if let Some(ref path) = config.log_file {
+                if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
+                    let log_entry = serde_json::json!({
+                        "time": engine.time,
+                        "vertices": engine.h.vertices.len(),
+                        "coordination": k,
+                        "chain_length": l,
+                        "acc_pct": acc_ratio * 100.0,
+                        "omega": omega,
+                        "knots": valid_knots,
+                        "total_knots": total_knots,
+                        "max_coh": max_coh,
+                        "step_ms": step_ms,
+                        "pid": std::process::id(),
+                    });
+                    let _ = writeln!(file, "{}", log_entry.to_string());
+                }
+            }
         }
     }
 

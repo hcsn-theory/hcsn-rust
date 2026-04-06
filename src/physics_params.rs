@@ -49,6 +49,11 @@ impl PhysicsParams {
             .parse()
             .unwrap_or(0.3);
 
+        let defect_injection = env::var("HCSN_DEFECT_INJECTION")
+            .unwrap_or_else(|_| "0.0".to_string())
+            .parse()
+            .unwrap_or(0.0);
+
         Self {
             gamma_defect,
             inertia_scale,
@@ -57,7 +62,7 @@ impl PhysicsParams {
             nonlinear_coupling,
             memory_coupling,
             noise_bias: 0.0,
-            defect_injection: 0.0,
+            defect_injection,
             geometry_freeze: 0.9,
         }
     }

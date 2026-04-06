@@ -1,104 +1,93 @@
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
+use hcsn_rust::rewrite_engine::{RewriteEngine, EmergenceMode, ConservationMode};
+use hcsn_rust::persistence::Persistence;
 use rayon::prelude::*;
-use std::fs::File;
-use std::io::Write;
-use std::env;
+use std::io::{Write};
 use std::sync::{Arc, Mutex};
-
-fn mag(a: (f64, f64)) -> f64 { (a.0 * a.0 + a.1 * a.1).sqrt().max(1e-6) }
+use std::env;
 
 fn main() {
-    env::set_var("RAYON_NUM_THREADS", "2");
-    println!("=== HCSN PARALLEL INTERACTION AGGREGATOR (MULTI-DIM) ===");
-    println!("Goal: Collect N >= 100 multi-dim samples across 40,000 aggregate steps");
+    let num_threads: usize = 2; // Upgraded to Dual-Core
+    println!("=== HCSN PARALLEL INTERACTION AGGREGATOR (v5.9.1) ===");
+    
+    let p_create = env::var("HCSN_P_CREATE")
+        .unwrap_or_else(|_| "0.58".to_string())
+        .parse()
+        .unwrap_or(0.58);
+        
+    let steps_per_thread = env::var("HCSN_STEPS")
+        .unwrap_or_else(|_| "125000".to_string())
+        .parse()
+        .unwrap_or(125000);
 
-    let p_create = 0.69;
-    let nu = 0.975;
-    let gamma = 2.0;
-    let mu = 0.3;
-    let steps_per_thread = 20000;
-    let num_threads = 2;
+    let emergence_mode_str = env::var("HCSN_EMERGENCE_MODE")
+        .unwrap_or_else(|_| "Assisted".to_string());
+    
+    let emergence_mode = match emergence_mode_str.as_str() {
+        "Control" => hcsn_rust::rewrite_engine::EmergenceMode::Control,
+        "Forced" => hcsn_rust::rewrite_engine::EmergenceMode::Forced,
+        _ => hcsn_rust::rewrite_engine::EmergenceMode::Assisted,
+    };
 
-    env::set_var("HCSN_NU", nu.to_string());
-    env::set_var("HCSN_GAMMA", gamma.to_string());
-    env::set_var("HCSN_MU", mu.to_string());
+    let out_file = Persistence::generate_filename("aggregator");
 
-    let all_points = Arc::new(Mutex::new(Vec::<(f64, f64, f64, f64, f64, f64, f64)>::new()));
+    println!("Configuration:");
+    println!("  Emergence: {:?}", emergence_mode);
+    println!("  p_create:  {}", p_create);
+    println!("  threads:   {}", num_threads);
+    println!("  steps:     {}", steps_per_thread * num_threads);
+    println!("  Output:    {}", out_file);
 
-    (0..num_threads).into_par_iter().for_each(|i| {
+    // Initialize Multi-Threaded Streaming I/O
+    let writer = Persistence::open_writer(&out_file);
+    let mut header_writer = writer;
+    Persistence::write_header(&mut header_writer).unwrap();
+    header_writer.flush().unwrap();
+    
+    let shared_writer = Arc::new(Mutex::new(header_writer));
+
+    (0..num_threads).into_par_iter().for_each(|tid| {
         let mut h = Hypergraph::new();
-        let v1 = h.add_vertex().id;
-        let v2 = h.add_vertex().id;
-        let v3 = h.add_vertex().id;
-        let v4 = h.add_vertex().id;
-        let nodes = vec![v1, v2, v3, v4];
-        for n1 in 0..4 {
-            for n2 in n1+1..4 {
-                h.add_causal_relation(nodes[n1], nodes[n2]);
-                h.add_hyperedge(vec![nodes[n1], nodes[n2]]);
+        // Seed vacuum defects for aggregator (Pre-interaction state)
+        for _ in 0..16 {
+            let mut knot_nodes = Vec::new();
+            for _ in 0..4 { knot_nodes.push(h.add_vertex().id); }
+            for n1 in 0..4 {
+                for n2 in n1+1..4 {
+                    h.add_causal_relation(knot_nodes[n1], knot_nodes[n2]);
+                    h.add_hyperedge(vec![knot_nodes[n1], knot_nodes[n2]]);
+                }
             }
         }
 
         let mut engine = RewriteEngine::new(h, p_create, None);
-        engine.pure_mode = true;
+        engine.pure_mode = false;
+        engine.conservation_mode = ConservationMode::Hybrid;
+        engine.mode = emergence_mode;
+        engine.thread_id = Some(tid);
+        engine.max_steps = steps_per_thread;
         engine.verbose = false;
 
-        println!("  Thread {}: Starting 20,000 steps...", i);
-        for _ in 0..steps_per_thread {
+        println!("  Thread {}: Initiating {} step parallel simulation...", tid, steps_per_thread);
+        for s in 1..=steps_per_thread {
             engine.step();
-        }
-
-        let mut points = Vec::new();
-        for event in engine.interaction_events.iter().filter(|e| e.duration >= 3) {
-            let chi = event.overlap_depth;
             
-            // Particle A
-            let p_pre_a = event.pre_a.2;
-            let coh_a = event.pre_a.4;
-            let stab_a = event.pre_a.5;
-            let rad_a = event.pre_a.6;
-            let size_a = event.pre_a.7;
-            let ratio_a = event.pre_a.8;
-
-            if let Some(post_a) = event.post_a {
-                let p_post_a = post_a.2;
-                if p_pre_a.abs() > 0.01 {
-                    let dp_norm = (p_post_a - p_pre_a).abs() / (p_pre_a.abs() + p_post_a.abs() + 1e-6);
-                    points.push((chi, dp_norm, coh_a, stab_a, rad_a, size_a as f64, ratio_a));
+            // Periodic Stream Flush (SSD Persistence @ 2,000 steps)
+            if s % 2000 == 0 || s == steps_per_thread {
+                let mut writer_lock = shared_writer.lock().unwrap();
+                let events = std::mem::take(&mut engine.interaction_events);
+                for event in events {
+                    if let Some(csv_row) = Persistence::format_event(&event) {
+                        writeln!(writer_lock, "{}", csv_row).unwrap();
+                    }
                 }
-            }
-
-            // Particle B
-            let p_pre_b = event.pre_b.2;
-            let coh_b = event.pre_b.4;
-            let stab_b = event.pre_b.5;
-            let rad_b = event.pre_b.6;
-            let size_b = event.pre_b.7;
-            let ratio_b = event.pre_b.8;
-
-            if let Some(post_b) = event.post_b {
-                let p_post_b = post_b.2;
-                if p_pre_b.abs() > 0.01 {
-                    let dp_norm = (p_post_b - p_pre_b).abs() / (p_pre_b.abs() + p_post_b.abs() + 1e-6);
-                    points.push((chi, dp_norm, coh_b, stab_b, rad_b, size_b as f64, ratio_b));
+                if s % 10000 == 0 {
+                    writer_lock.flush().unwrap();
                 }
             }
         }
-        all_points.lock().unwrap().extend(points);
-        println!("  Thread {}: Done.", i);
     });
 
-    let final_points = all_points.lock().unwrap();
-    println!("\n=== Aggregation Complete ===");
-    println!("Total Aggregate Steps: {}", steps_per_thread * num_threads);
-    println!("Total Samples Collected (N): {}", final_points.len());
-
-    let mut file = File::create("exports/interaction_points_raw.csv").unwrap();
-    writeln!(file, "chi,dp_norm,coh,stab,rad,size,ratio").unwrap();
-    for (chi, dp, coh, stab, rad, size, ratio) in final_points.iter() {
-        writeln!(file, "{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}", 
-            chi, dp, coh, stab, rad, size, ratio).unwrap();
-    }
-    println!("Data exported to exports/interaction_points_raw.csv");
+    println!("\n=== Conservation Aggregation Complete ===");
+    println!("High-rigor dataset streamed to {}", out_file);
 }

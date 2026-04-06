@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use fixedbitset::FixedBitSet;
 use rand::seq::SliceRandom;
 use crate::hypergraph::Hypergraph;
 
@@ -114,12 +115,12 @@ pub fn adjacency_overlap(h_before: &Hypergraph, h_after: &Hypergraph) -> f64 {
     intersection_count as f64 / max_len as f64
 }
 
-pub fn interaction_concentration(interactions: &HashMap<u64, HashSet<u64>>) -> f64 {
+pub fn interaction_concentration(interactions: &HashMap<u64, FixedBitSet>) -> f64 {
     /*
     Φ = max degree / total degree
     interactions: dict {node_id: set(neighbors)}
     */
-    let degrees: Vec<usize> = interactions.values().map(|v| v.len()).collect();
+    let degrees: Vec<usize> = interactions.values().map(|v| v.ones().count()).collect();
     if degrees.is_empty() {
         return 0.0;
     }
@@ -132,7 +133,7 @@ pub fn interaction_concentration(interactions: &HashMap<u64, HashSet<u64>>) -> f
     max_degree as f64 / sum_degrees as f64
 }
 
-pub fn worldline_interaction_graph(h: &Hypergraph, fraction: f64) -> HashMap<u64, HashSet<u64>> {
+pub fn worldline_interaction_graph(h: &Hypergraph, fraction: f64) -> HashMap<u64, FixedBitSet> {
     // Build interaction graph among deep worldlines.
     let max_depth = h.max_chain_length() as f64;
     let cutoff = (fraction * max_depth) as usize;
@@ -142,7 +143,9 @@ pub fn worldline_interaction_graph(h: &Hypergraph, fraction: f64) -> HashMap<u64
         .map(|v| v.id)
         .collect();
 
-    let mut interactions: HashMap<u64, HashSet<u64>> = HashMap::new();
+    let mut interactions: HashMap<u64, FixedBitSet> = HashMap::new();
+    let max_id = h.vertices.keys().max().unwrap_or(&0);
+    let cap = (*max_id as usize + 1).max(1024);
 
     for edge in h.hyperedges.values() {
         let ids: Vec<u64> = edge.vertices.iter()
@@ -153,7 +156,9 @@ pub fn worldline_interaction_graph(h: &Hypergraph, fraction: f64) -> HashMap<u64
         for &i in &ids {
             for &j in &ids {
                 if i != j {
-                    interactions.entry(i).or_default().insert(j);
+                    interactions.entry(i)
+                        .or_insert_with(|| FixedBitSet::with_capacity(cap))
+                        .insert(j as usize);
                 }
             }
         }
@@ -162,7 +167,7 @@ pub fn worldline_interaction_graph(h: &Hypergraph, fraction: f64) -> HashMap<u64
     interactions
 }
 
-pub fn count_triangles(interactions: &HashMap<u64, HashSet<u64>>) -> usize {
+pub fn count_triangles(interactions: &HashMap<u64, FixedBitSet>) -> usize {
     /*
     Count triangles in an undirected interaction graph.
     interactions: dict {node_id: set(neighbors)}
@@ -170,14 +175,17 @@ pub fn count_triangles(interactions: &HashMap<u64, HashSet<u64>>) -> usize {
     let mut triangles = 0;
     
     for (&u, nbrs_u) in interactions {
-        for &v in nbrs_u {
+        for v_idx in nbrs_u.ones() {
+            let v = v_idx as u64;
             if v <= u {
                 continue;
             }
             if let Some(nbrs_v) = interactions.get(&v) {
                 // common neighbors w form triangles u-v-w
-                for &w in nbrs_u.intersection(nbrs_v) {
-                    if w > v {
+                // Use bitset-native intersection count if possible, but manual check is fine for triangles logic
+                for w_idx in nbrs_u.ones() {
+                    let w = w_idx as u64;
+                    if w > v && nbrs_v.contains(w_idx) {
                         triangles += 1;
                     }
                 }
@@ -191,12 +199,12 @@ pub fn count_triangles(interactions: &HashMap<u64, HashSet<u64>>) -> usize {
 Ω is a consistent structural observable derived from local clustering statistics. 
 While not unique, it provides a stable, scale-local diagnostic of structural organization.
 */
-pub fn compute_omega(inter: &HashMap<u64, HashSet<u64>>) -> f64 {
+pub fn compute_omega(inter: &HashMap<u64, FixedBitSet>) -> f64 {
     let mut total = 0.0;
     let mut count = 0;
 
     for neighbors in inter.values() {
-        let k = neighbors.len();
+        let k = neighbors.ones().count();
 
         if k < 2 {
             continue;
@@ -205,12 +213,12 @@ pub fn compute_omega(inter: &HashMap<u64, HashSet<u64>>) -> f64 {
         let mut edges_between_neighbors = 0;
         let mut possible = 0;
 
-        let neigh_vec: Vec<_> = neighbors.iter().collect();
+        let neigh_vec: Vec<usize> = neighbors.ones().collect();
 
         for i in 0..neigh_vec.len() {
             for j in (i + 1)..neigh_vec.len() {
                 possible += 1;
-                if let Some(nbrs) = inter.get(neigh_vec[i]) {
+                if let Some(nbrs) = inter.get(&(neigh_vec[i] as u64)) {
                     if nbrs.contains(neigh_vec[j]) {
                         edges_between_neighbors += 1;
                     }
@@ -253,7 +261,7 @@ pub fn defect_density(h: &Hypergraph) -> f64 {
 
 pub fn local_omega(
     _h: &Hypergraph,
-    inter: &HashMap<u64, HashSet<u64>>,
+    inter: &HashMap<u64, FixedBitSet>,
     v: u64,
 ) -> f64 {
     /*
@@ -270,24 +278,24 @@ pub fn local_omega(
     }
 
     let mut closed = 0;
-    for &u in neighbors {
-        if let Some(n_u) = inter.get(&u) {
-            if n_u.contains(&v) {
+    for u_idx in neighbors.ones() {
+        if let Some(n_u) = inter.get(&(u_idx as u64)) {
+            if n_u.contains(v as usize) {
                 closed += 1;
             }
         }
     }
 
-    closed as f64 / (neighbors.len() as f64).max(1.0)
+    closed as f64 / (neighbors.ones().count() as f64).max(1.0)
 }
 
-pub fn compute_coherence_raw(neighborhood: &HashSet<u64>, inter: &HashMap<u64, HashSet<u64>>) -> (u32, u32) {
+pub fn compute_coherence_raw(neighborhood: &HashSet<u64>, inter: &HashMap<u64, FixedBitSet>) -> (u32, u32) {
     let mut internal: u32 = 0;
     let mut boundary: u32 = 0;
     for &n in neighborhood {
         if let Some(n_nbrs) = inter.get(&n) {
-            for &nn in n_nbrs {
-                if neighborhood.contains(&nn) {
+            for nn_idx in n_nbrs.ones() {
+                if neighborhood.contains(&(nn_idx as u64)) {
                     internal += 1;
                 } else {
                     boundary += 1;
@@ -312,6 +320,9 @@ pub struct TopologicalKnot {
     pub velocity_avg: (f64, f64), // (dx, dy) approximated over short history
     pub mass: f64,               // size * coherence^eta
     pub momentum: f64,           // m * v
+    pub energy: f64,             // 0.5 * m * v^2
+    pub prev_mass: f64,
+    pub prev_momentum: f64,
     pub position_history: Vec<(usize, f64, f64)>, // (time, centroid_x_approx, coherence)
 }
 
@@ -327,18 +338,18 @@ pub struct InteractionEvent {
     pub resonance: f64,       // A = (2*coh_a*coh_b)/(coh_a^2 + coh_b^2)
     
     // Kinematic & Structural states 
-    // [m, v_scalar, p_scalar, (vx, vy), coherence, mean_stability, radius, size, boundary_ratio]
-    pub pre_a: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64),
-    pub pre_b: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64),
-    pub post_a: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64)>,
-    pub post_b: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64)>,
+    // [m, v_scalar, p_scalar, (vx, vy), coherence, mean_stability, radius, size, boundary_ratio, energy]
+    pub pre_a: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64),
+    pub pre_b: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64),
+    pub post_a: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64)>,
+    pub post_b: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64)>,
 
     // For internal lifecycle tracking
     #[serde(skip)]
     pub steps_below_threshold: usize,
 }
 
-pub fn component_radius(comp: &HashSet<u64>, inter: &HashMap<u64, HashSet<u64>>) -> f64 {
+pub fn component_radius(comp: &HashSet<u64>, inter: &HashMap<u64, FixedBitSet>) -> f64 {
     if comp.len() < 2 { return 0.0; }
     let mut total_dist = 0;
     let mut pairs = 0;
@@ -356,7 +367,8 @@ pub fn component_radius(comp: &HashSet<u64>, inter: &HashMap<u64, HashSet<u64>>)
             if dist > 0 { pairs += 1; }
             
             if let Some(nbrs) = inter.get(&node) {
-                for &nbr in nbrs {
+                for nbr_idx in nbrs.ones() {
+                    let nbr = nbr_idx as u64;
                     if comp.contains(&nbr) && !visited.contains(&nbr) {
                         visited.insert(nbr);
                         queue.push((nbr, dist + 1));
@@ -368,29 +380,29 @@ pub fn component_radius(comp: &HashSet<u64>, inter: &HashMap<u64, HashSet<u64>>)
     if pairs == 0 { 0.0 } else { (total_dist as f64) / (pairs as f64) }
 }
 
-pub fn local_clustering(inter: &HashMap<u64, HashSet<u64>>, v: u64) -> f64 {
+pub fn local_clustering(inter: &HashMap<u64, FixedBitSet>, v: u64) -> f64 {
     let nbrs = match inter.get(&v) {
         Some(set) => set,
         None => return 0.0,
     };
     if nbrs.len() < 2 { return 0.0; }
     let mut links = 0;
-    for &u in nbrs {
-        if let Some(u_nbrs) = inter.get(&u) {
-            for &w in nbrs {
-                if u != w && u_nbrs.contains(&w) {
+    for u_idx in nbrs.ones() {
+        if let Some(u_nbrs) = inter.get(&(u_idx as u64)) {
+            for w_idx in nbrs.ones() {
+                if u_idx != w_idx && u_nbrs.contains(w_idx) {
                     links += 1;
                 }
             }
         }
     }
-    let possible = (nbrs.len() * (nbrs.len() - 1)) as f64;
+    let possible = (nbrs.ones().count() * (nbrs.ones().count().saturating_sub(1))) as f64;
     (links as f64) / possible
 }
 
 pub fn detect_candidate_knot_neighborhoods(
     h: &Hypergraph,
-    inter: &HashMap<u64, HashSet<u64>>,
+    inter: &HashMap<u64, FixedBitSet>,
     min_coherence: f64,
 ) -> Vec<HashSet<u64>> {
     // Step 1: For each vertex, evaluate its 1-hop neighborhood as a candidate region
@@ -400,7 +412,7 @@ pub fn detect_candidate_knot_neighborhoods(
     
     for &v in h.vertices.keys() {
         if let Some(neighbors) = inter.get(&v) {
-            let mut neighborhood: HashSet<u64> = neighbors.clone();
+            let mut neighborhood: HashSet<u64> = neighbors.ones().map(|idx| idx as u64).collect();
             neighborhood.insert(v);
             
             if neighborhood.len() < 3 { continue; }
@@ -430,37 +442,63 @@ pub fn detect_candidate_knot_neighborhoods(
         }
     }
     
-    // Step 2: Merge overlapping seed regions via greedy BFS union
+    // Step 2: Merge overlapping seed regions via Union-Find and Lookup Map
     if seed_regions.is_empty() { return Vec::new(); }
     
-    let mut merged: Vec<HashSet<u64>> = Vec::new();
-    let mut used = vec![false; seed_regions.len()];
+    let n = seed_regions.len();
+    let mut parent: Vec<usize> = (0..n).collect();
     
-    for i in 0..seed_regions.len() {
-        if used[i] { continue; }
-        used[i] = true;
-        let mut cluster = seed_regions[i].clone();
-        
-        // Greedily absorb overlapping seeds
-        let mut changed = true;
-        while changed {
-            changed = false;
-            for j in 0..seed_regions.len() {
-                if used[j] { continue; }
-                let overlap = cluster.intersection(&seed_regions[j]).count();
-                let min_size = cluster.len().min(seed_regions[j].len());
-                if min_size > 0 && (overlap as f64 / min_size as f64) > 0.3 {
-                    for &v in &seed_regions[j] {
-                        cluster.insert(v);
-                    }
-                    used[j] = true;
-                    changed = true;
+    fn find(i: usize, p: &mut Vec<usize>) -> usize {
+        if p[i] == i { i }
+        else {
+            let root = find(p[i], p);
+            p[i] = root;
+            root
+        }
+    }
+    
+    fn union(i: usize, j: usize, p: &mut Vec<usize>) {
+        let root_i = find(i, p);
+        let root_j = find(j, p);
+        if root_i != root_j {
+            p[root_i] = root_j;
+        }
+    }
+
+    // Map vertex -> list of seed region indices it belongs to
+    let mut v_to_s: HashMap<u64, Vec<usize>> = HashMap::new();
+    for (idx, seed) in seed_regions.iter().enumerate() {
+        for &v in seed {
+            v_to_s.entry(v).or_default().push(idx);
+        }
+    }
+
+    // Evaluate merges only for seeds sharing at least one vertex
+    for seeds in v_to_s.values() {
+        for i in 0..seeds.len() {
+            for j in i+1..seeds.len() {
+                let s1 = seeds[i];
+                let s2 = seeds[j];
+                if find(s1, &mut parent) == find(s2, &mut parent) { continue; }
+                
+                let overlap = seed_regions[s1].intersection(&seed_regions[s2]).count();
+                let min_s = seed_regions[s1].len().min(seed_regions[s2].len());
+                if min_s > 0 && (overlap as f64 / min_s as f64) > 0.3 {
+                    union(s1, s2, &mut parent);
                 }
             }
         }
-        
-        merged.push(cluster);
     }
-    
-    merged
+
+    // Grouping seeds by Union-Find root
+    let mut groups: HashMap<usize, HashSet<u64>> = HashMap::new();
+    for i in 0..n {
+        let root = find(i, &mut parent);
+        let group = groups.entry(root).or_default();
+        for &v in &seed_regions[i] {
+            group.insert(v);
+        }
+    }
+
+    groups.into_values().collect()
 }

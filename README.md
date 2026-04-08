@@ -1,7 +1,7 @@
 # 🦀 HCSN Rust — Hierarchical Causal Structure Network
 
 [![DOI](https://img.shields.io/badge/DOI-10.55277%2Fresearchhub.fvahxvpt.1-blue)](https://doi.org/10.55277/researchhub.fvahxvpt.1)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
@@ -78,6 +78,6 @@ The system confirms that "Matter" is a persistent topological knot that interact
 
 ---
 
-## License
-Published under the **Apache 2.0** licence.
-© 2026 HCSN Theory Group
+## 📜 License
+Published under the **MIT License**. See `LICENSE` for details.
+© 2026 HCSN Theory Group (Saif Mukhtar)

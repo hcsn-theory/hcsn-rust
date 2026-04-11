@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::hypergraph::{Hypergraph, Hyperedge, Vertex};

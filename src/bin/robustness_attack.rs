@@ -5,6 +5,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 struct Event {
     chi: f64,
     dp_norm: f64,

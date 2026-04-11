@@ -161,7 +161,7 @@ impl Hypergraph {
         })
     }
 
-    fn touched_vertices(&self, v_id: u64) -> HashSet<u64> {
+    fn _touched_vertices(&self, v_id: u64) -> HashSet<u64> {
         self.causal_future.get(&v_id)
             .map(|bs| bs.ones().map(|i| i as u64).collect())
             .unwrap_or_default()

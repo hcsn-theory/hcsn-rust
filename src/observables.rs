@@ -338,11 +338,11 @@ pub struct InteractionEvent {
     pub resonance: f64,       // A = (2*coh_a*coh_b)/(coh_a^2 + coh_b^2)
     
     // Kinematic & Structural states 
-    // [m, v_scalar, p_scalar, (vx, vy), coherence, mean_stability, radius, size, boundary_ratio, energy]
-    pub pre_a: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64),
-    pub pre_b: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64),
-    pub post_a: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64)>,
-    pub post_b: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64)>,
+    // [m, v_scalar, p_scalar, (vx, vy), coherence, mean_stability, radius, size, boundary_ratio, energy, age]
+    pub pre_a: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64, usize),
+    pub pre_b: (f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64, usize),
+    pub post_a: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64, usize)>,
+    pub post_b: Option<(f64, f64, f64, (f64, f64), f64, f64, f64, usize, f64, f64, usize)>,
 
     // For internal lifecycle tracking
     #[serde(skip)]

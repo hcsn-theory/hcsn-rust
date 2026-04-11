@@ -18,7 +18,7 @@ fn main() {
     for line in reader.lines().skip(1) {
         let l = line.unwrap();
         let parts: Vec<&str> = l.split(',').collect();
-        if parts.len() == 2 {
+        if parts.len() >= 2 {
             let chi: f64 = parts[0].parse().unwrap();
             let dp: f64 = parts[1].parse().unwrap();
             points.push(Point { chi, dp });

@@ -159,8 +159,8 @@ fn main() {
     
     let mut accepted = 0;
     let mut rejected = 0;
-    let mut last_k = engine.h.average_coordination();
-    let mut last_l = engine.h.max_chain_length();
+    let last_k = engine.h.average_coordination();
+    let last_l = engine.h.max_chain_length();
     let mut last_omega = 0.0;
     // let prev_total_stability = 0.0;
     let start_time = Instant::now();

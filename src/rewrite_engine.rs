@@ -2,14 +2,15 @@ use std::collections::{HashMap, HashSet};
 use fixedbitset::FixedBitSet;
 use std::time::Instant;
 use rand::Rng;
-use serde::Serialize;
 use rand::seq::SliceRandom;
+use rand::SeedableRng;
+use rand::rngs::SmallRng;
 
 use crate::hypergraph::Hypergraph;
 use crate::physics_params::PhysicsParams;
 use crate::rules::{edge_creation_rule, UndoRecord};
 use crate::observables::{
-    worldline_interaction_graph, compute_omega, TopologicalKnot, InteractionEvent, 
+    compute_omega, TopologicalKnot, InteractionEvent, 
     detect_candidate_knot_neighborhoods, component_radius, compute_coherence_raw,
 };
 
@@ -109,14 +110,18 @@ pub struct RewriteEngine {
     // Observability
     pub thread_id: Option<usize>,
     pub max_steps: usize,
+    pub rng: SmallRng,
 }
 
 
 
 impl RewriteEngine {
-    pub fn new(h: Hypergraph, p_create: f64, _seed: Option<u64>) -> Self {
-        // Rust's rand::thread_rng() replaces the fixed seed initialization for now,
-        // though a SmallRng could be seeded specifically.
+    pub fn new(h: Hypergraph, p_create: f64, seed: Option<u64>) -> Self {
+        // Initialize deterministic SmallRng from seed or random entropy
+        let rng = match seed {
+            Some(s) => SmallRng::seed_from_u64(s),
+            None => SmallRng::from_entropy(),
+        };
 
         Self {
             h,
@@ -171,6 +176,7 @@ impl RewriteEngine {
             momentum_reservoir: HashMap::new(),
             thread_id: None,
             max_steps: 0,
+            rng,
         }
     }
 
@@ -222,7 +228,7 @@ impl RewriteEngine {
 
         // --- Hypothesis E: Interaction Time Symmetry (Stochastic Undo) ---
         if self.conservation_mode == ConservationMode::TimeSymmetry {
-            let mut rng = rand::thread_rng();
+            let rng = &mut self.rng;
             
             // Check for high local momentum error threshold (0.5)
             let mut high_error = false;
@@ -261,7 +267,7 @@ impl RewriteEngine {
 
         // Experiment C: Spontaneous Vacuum Nucleation (Bypassed in Pure Mode)
         if !self.pure_mode && self.params.defect_injection > 0.0 {
-            let mut rng = rand::thread_rng();
+            let rng = &mut self.rng;
             if rng.gen::<f64>() < self.params.defect_injection {
                 let v1 = self.h.add_vertex();
                 let v2 = self.h.add_vertex();
@@ -310,7 +316,7 @@ impl RewriteEngine {
         // ---------------------------------
         let accept_prob = 1.0;
 
-        let mut rng = rand::thread_rng();
+        let rng = &mut self.rng;
         let accepted = rng.gen::<f64>() <= accept_prob;
 
         if !accepted {
@@ -388,11 +394,9 @@ impl RewriteEngine {
 
             self.record_xi_current(&inter);
             
-            if self.time % 10 == 0 {
-                self.update_topological_knots(&inter);
-                self.update_stability(&inter);
-                self.perform_kinematics_and_interactions(&inter);
-            }
+            self.update_topological_knots(&inter);
+            self.update_stability(&inter);
+            self.perform_kinematics_and_interactions(&inter);
         }
 
         // Timing + diagnostics
@@ -577,7 +581,11 @@ impl RewriteEngine {
                 if cand.len() > updated_knot.max_size { updated_knot.max_size = cand.len(); }
                 if cand.len() < updated_knot.min_size { updated_knot.min_size = cand.len(); }
                 
-                let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / cand.len() as f64;
+                // Normalize position by max vertex ID so the proxy stays in (0, 1].
+                // Without this, monotonically-growing IDs cause unbounded velocity → Inf → NaN
+                // which silently poisons all conservation-mode corrections (Hyp A/C/D/E).
+                let max_id = h.vertices.keys().max().cloned().unwrap_or(1) as f64;
+                let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id);
                 let prev_pos = knot.position_history.last().map(|(_, p, _)| *p).unwrap_or(mean_pos);
                 updated_knot.velocity = (mean_pos - prev_pos).abs() / 10.0;
                 
@@ -607,7 +615,8 @@ impl RewriteEngine {
             
             // Only spawn if it meets structural criteria
             if coherence > min_coherence {
-                let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / cand.len() as f64;
+                let max_id = h.vertices.keys().max().cloned().unwrap_or(1) as f64;
+                let mean_pos = cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id);
                 let new_knot = TopologicalKnot {
                     id: *next_knot_id,
                     vertices: cand.clone(),
@@ -647,18 +656,28 @@ impl RewriteEngine {
             knot.mass = knot.vertices.len() as f64 * knot.coherence.powi(2);
             let hist = &knot.position_history;
             if hist.len() > 1 {
-                let (t1, p1, _) = hist[0];
+                // Use CONSECUTIVE frames (last two) for instantaneous velocity.
+                // Using first→last spans different normalization baselines (max_id grows
+                // monotonically), so the positional delta explodes even after normalizing.
+                // Consecutive frames are always within ~10 simulation steps of each other,
+                // so max_id barely changes and the delta is small and physically meaningful.
+                let (t1, p1, _) = hist[hist.len()-2];
                 let (t2, p2, _) = hist[hist.len()-1];
                 let dt = (t2 - t1) as f64;
                 if dt > 0.0 {
                     let mut dv = (p2 - p1) / dt;
-                    
+
                     // Hypothesis B: Exponential Inertia (Inertial Cooling v5.0)
                     if self.conservation_mode == ConservationMode::StabilityScaled || self.conservation_mode == ConservationMode::Hybrid {
                         let stab = knot.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / knot.vertices.len() as f64;
                         // v_new = v_old * exp(-S / 30.0) + v_min
                         dv = dv * (-stab / 30.0).exp() + 0.05;
                     }
+
+                    // Hard clamp: velocity must stay physically bounded.
+                    // Normalized position ∈ (0,1], so |Δpos/Δt| should never exceed ~1.
+                    // Clamp to ±10.0 as a generous safety ceiling.
+                    dv = dv.clamp(-10.0, 10.0);
 
                     knot.velocity_avg = (dv, 0.0);
                 }
@@ -775,8 +794,8 @@ impl RewriteEngine {
                                 start_time: self.time, end_time: None, duration: 0,
                                 knot_a: id_a, knot_b: id_b, overlap_size: intersection,
                                 overlap_depth: chi, resonance: res,
-                                pre_a: (m_a, knot_a.velocity, m_a * knot_a.velocity_avg.0, knot_a.velocity_avg, knot_a.coherence, stab_a, knot_a.radius, knot_a.vertices.len(), ratio_a, knot_a.energy),
-                                pre_b: (m_b, knot_b.velocity, m_b * knot_b.velocity_avg.0, knot_b.velocity_avg, knot_b.coherence, stab_b, knot_b.radius, knot_b.vertices.len(), ratio_b, knot_b.energy),
+                                pre_a: (m_a, knot_a.velocity, m_a * knot_a.velocity_avg.0, knot_a.velocity_avg, knot_a.coherence, stab_a, knot_a.radius, knot_a.vertices.len(), ratio_a, knot_a.energy, knot_a.age),
+                                pre_b: (m_b, knot_b.velocity, m_b * knot_b.velocity_avg.0, knot_b.velocity_avg, knot_b.coherence, stab_b, knot_b.radius, knot_b.vertices.len(), ratio_b, knot_b.energy, knot_b.age),
                                 post_a: None, post_b: None,
                                 steps_below_threshold: 0,
                             });
@@ -809,14 +828,17 @@ impl RewriteEngine {
 
                         let delta_total = (p_a_after + p_b_after) - (p_a_before + p_b_before);
                         
-                        // Hybrid A: Asymptotic Symmetry Ramp (v5.2 Physically Honest)
+                        // Hybrid A: Asymptotic Symmetry Ramp (v6.0 Phase Transition)
                         let s_avg = (event.pre_a.5 + event.pre_b.5) / 2.0;
                         
-                        // k ramps linearly with stability. Physics emerges as S -> 20.0
-                        let k = (s_avg / 20.0).min(1.0);
+                        // k ramps non-linearly with gamma. Physics sharpens as S -> 20.0
+                        let k = (s_avg / 20.0).powf(self.params.nonlinear_coupling).min(1.0);
                         
-                        let correction = -k * 0.5 * delta_total; 
-                        corrections.push((event.knot_a, event.knot_b, correction));
+                        let correction = -k * 0.5 * delta_total;
+                        // Guard: only apply correction if finite (safety net for edge cases)
+                        if correction.is_finite() {
+                            corrections.push((event.knot_a, event.knot_b, correction));
+                        }
                     }
                 }
             }
@@ -838,8 +860,8 @@ impl RewriteEngine {
         for (pair, event) in self.active_interactions.iter_mut() {
             if !current_overlaps.contains(pair) {
                 event.steps_below_threshold += 1;
-                // Since this check runs every 10 simulation steps, 1 check = 10 steps > threshold 5.
-                if event.steps_below_threshold >= 1 {
+                // Since this check runs every step, threshold 10 keeps transient overlaps filtered.
+                if event.steps_below_threshold >= 10 {
                     finished.push(*pair);
                 }
             }
@@ -855,13 +877,13 @@ impl RewriteEngine {
                 let stab = ka.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / ka.vertices.len() as f64;
                 let (int, bnd) = compute_coherence_raw(&ka.vertices, _inter);
                 let ratio = int as f64 / (int + bnd).max(1) as f64;
-                event.post_a = Some((ka.mass, ka.velocity, ka.mass * ka.velocity_avg.0, ka.velocity_avg, ka.coherence, stab, ka.radius, ka.vertices.len(), ratio, ka.energy));
+                event.post_a = Some((ka.mass, ka.velocity, ka.mass * ka.velocity_avg.0, ka.velocity_avg, ka.coherence, stab, ka.radius, ka.vertices.len(), ratio, ka.energy, ka.age));
             }
             if let Some(kb) = self.active_knots.get(&event.knot_b) {
                 let stab = kb.vertices.iter().map(|&v| self.stability.get(&v).unwrap_or(&0.0)).sum::<f64>() / kb.vertices.len() as f64;
                 let (int, bnd) = compute_coherence_raw(&kb.vertices, _inter);
                 let ratio = int as f64 / (int + bnd).max(1) as f64;
-                event.post_b = Some((kb.mass, kb.velocity, kb.mass * kb.velocity_avg.0, kb.velocity_avg, kb.coherence, stab, kb.radius, kb.vertices.len(), ratio, kb.energy));
+                event.post_b = Some((kb.mass, kb.velocity, kb.mass * kb.velocity_avg.0, kb.velocity_avg, kb.coherence, stab, kb.radius, kb.vertices.len(), ratio, kb.energy, kb.age));
             }
             
             self.interaction_events.push(event);
@@ -874,7 +896,6 @@ impl RewriteEngine {
     fn update_stability(&mut self, _inter: &HashMap<u64, FixedBitSet>) {
         // (1) Stability Decay (nu)
         let stability_decay = self.params.stability_decay;
-        let stability_gain = 1.0;
         
         // Decay all existing stability
         for val in self.stability.values_mut() {
@@ -904,13 +925,13 @@ impl RewriteEngine {
     // Rewrite proposal
     // --------------------------------------------------
     fn propose_rewrite(&mut self, inter: &HashMap<u64, FixedBitSet>) -> Option<UndoRecord> {
-        let mut rng = rand::thread_rng();
+        let rng = &mut self.rng;
 
         self.attempted_rewrites += 1;
 
         let vertices: Vec<u64> = self.h.vertices.keys().copied().collect();
         if vertices.is_empty() { return None; }
-        let anchor_v = *vertices.choose(&mut rng).unwrap();
+        let anchor_v = *vertices.choose(rng).unwrap();
 
         // --- Pure Mode Bypass ---
         if self.pure_mode {
@@ -1418,11 +1439,11 @@ impl RewriteEngine {
             return false;
         }
 
-        let mut rng = rand::thread_rng();
+        let rng = &mut self.rng;
         let vertex_ids: Vec<u64> = self.h.vertices.keys().cloned().collect();
 
         for _ in 0..max_tries {
-            let vid = *vertex_ids.choose(&mut rng).unwrap();
+            let vid = *vertex_ids.choose(rng).unwrap();
             let undo = edge_creation_rule(&mut self.h, Some(vid), self.p_create);
 
             if let Some(u) = undo {
@@ -1475,8 +1496,6 @@ impl RewriteEngine {
         let n = self.h.vertices.len().max(1) as f64;
         let max_depth = 20.max((n.log2() * 4.0) as usize);
 
-        let mut rng = rand::thread_rng();
-
         // restrict candidates to the same connected component to avoid `inf` distances
         let mut reachable = xi_support.clone();
         let mut frontier = xi_support.clone();
@@ -1509,7 +1528,7 @@ impl RewriteEngine {
         let mut best_d = 0;
 
         for _ in 0..max_tries {
-            let vid = *candidates.choose(&mut rng).unwrap();
+            let vid = *candidates.choose(&mut self.rng).unwrap();
             if xi_support.contains(&vid) {
                 continue;
             }

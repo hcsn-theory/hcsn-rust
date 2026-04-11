@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use hcsn_rust::hypergraph::Hypergraph;
 use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::compute_omega;

@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use rand::Rng;
-use rand::seq::SliceRandom;
-use crate::hypergraph::{Hypergraph, Hyperedge, Vertex};
+use crate::hypergraph::{Hyperedge, Hypergraph, Vertex};
 use fixedbitset::FixedBitSet;
+use rand::seq::SliceRandom;
+use rand::Rng;
+use std::collections::HashMap;
 
 /// Explict struct to replace Python's dynamic undo dictionary
 #[derive(Clone, Debug, Default)]
@@ -34,11 +34,12 @@ pub fn edge_creation_rule(
 
     // Select target edge
     let edge = if let Some(anchor_id) = anchor_vertex_id {
-        let candidates: Vec<&Hyperedge> = h.hyperedges
+        let candidates: Vec<&Hyperedge> = h
+            .hyperedges
             .values()
             .filter(|e| e.vertices.contains(&anchor_id))
             .collect();
-            
+
         if candidates.is_empty() {
             return None;
         }
@@ -61,9 +62,9 @@ pub fn edge_creation_rule(
 
         if !h.is_causally_related(u_id, v_id) {
             h.add_causal_relation(u_id, v_id);
-            
+
             let e = h.add_hyperedge(vec![u_id, v_id]);
-            
+
             undo.added_edges.push(e.id);
             undo.added_causal.push((u_id, v_id));
         }
@@ -106,13 +107,14 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     }
 
     let mut rng = rand::thread_rng();
-    
+
     let edge = if let Some(anchor_id) = anchor_vertex_id {
-        let candidates: Vec<&Hyperedge> = h.hyperedges
+        let candidates: Vec<&Hyperedge> = h
+            .hyperedges
             .values()
             .filter(|e| e.vertices.contains(&anchor_id))
             .collect();
-            
+
         if candidates.is_empty() {
             return None;
         }
@@ -129,9 +131,11 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     let v_keep_id = edge.vertices[0];
     let v_remove_id = edge.vertices[1];
 
-    let has_remaining_edges = h.hyperedges.values()
+    let has_remaining_edges = h
+        .hyperedges
+        .values()
         .any(|e| !e.vertices.contains(&v_remove_id));
-        
+
     if !has_remaining_edges {
         return None;
     }
@@ -161,7 +165,7 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     // Since we are removing v_remove_id, we need to manually update 1-hop adjacency of its neighbors
     let parents = h.vertices.get(&v_remove_id).unwrap().parents.clone();
     let children = h.vertices.get(&v_remove_id).unwrap().children.clone();
-    
+
     h.merge_causal_identity(v_keep_id, v_remove_id);
 
     for p_id in parents {
@@ -186,7 +190,7 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
             edges_to_remove.push(*eid);
         }
     }
-    
+
     for eid in edges_to_remove {
         if let Some(e) = h.hyperedges.remove(&eid) {
             undo.removed_edges.insert(eid, e);

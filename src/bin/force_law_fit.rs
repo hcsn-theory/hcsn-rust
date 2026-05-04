@@ -9,11 +9,11 @@ struct Point {
 
 fn main() {
     println!("=== HCSN FUNCTIONAL INTERACTION FITTER ===");
-    
+
     let path = "exports/interaction_points_raw.csv";
     let file = File::open(path).expect("Could not open interaction data");
     let reader = BufReader::new(file);
-    
+
     let mut points = Vec::new();
     for line in reader.lines().skip(1) {
         let l = line.unwrap();
@@ -24,22 +24,29 @@ fn main() {
             points.push(Point { chi, dp });
         }
     }
-    
+
     let n = points.len();
     println!("Loaded N = {} data points.", n);
-    
-    if n == 0 { return; }
+
+    if n == 0 {
+        return;
+    }
 
     // --- PHASE 1: BINNING (Noise Reduction) ---
     const NUM_BINS: usize = 50;
     let mut bins: Vec<Vec<f64>> = vec![Vec::new(); NUM_BINS];
     let min_chi = points.iter().map(|p| p.chi).fold(f64::INFINITY, f64::min);
-    let max_chi = points.iter().map(|p| p.chi).fold(f64::NEG_INFINITY, f64::max);
+    let max_chi = points
+        .iter()
+        .map(|p| p.chi)
+        .fold(f64::NEG_INFINITY, f64::max);
     let range_chi = (max_chi - min_chi).max(1e-6);
 
     for p in &points {
         let mut bin_idx = ((p.chi - min_chi) / range_chi * NUM_BINS as f64) as usize;
-        if bin_idx >= NUM_BINS { bin_idx = NUM_BINS - 1; }
+        if bin_idx >= NUM_BINS {
+            bin_idx = NUM_BINS - 1;
+        }
         bins[bin_idx].push(p.dp);
     }
 
@@ -48,10 +55,16 @@ fn main() {
         if !bins[i].is_empty() {
             let b_chi = min_chi + (i as f64 + 0.5) * (range_chi / NUM_BINS as f64);
             let b_dp: f64 = bins[i].iter().sum::<f64>() / bins[i].len() as f64;
-            binned_points.push(Point { chi: b_chi, dp: b_dp });
+            binned_points.push(Point {
+                chi: b_chi,
+                dp: b_dp,
+            });
         }
     }
-    println!("Reduced noise to {} binned mean points.", binned_points.len());
+    println!(
+        "Reduced noise to {} binned mean points.",
+        binned_points.len()
+    );
     for p in &binned_points {
         println!("  chi={:.4}, dp_mean={:.4}", p.chi, p.dp);
     }
@@ -66,9 +79,11 @@ fn main() {
     let mut best_x0 = 0.0;
     let mut min_sse_a = f64::INFINITY;
 
-    for a_int in 5..200 { // A from 0.5 to 20.0
+    for a_int in 5..200 {
+        // A from 0.5 to 20.0
         let a = a_int as f64 * 0.1;
-        for x0_int in 1..80 { // x0 from 0.01 to 0.8
+        for x0_int in 1..80 {
+            // x0 from 0.01 to 0.8
             let x0 = x0_int as f64 * 0.01;
             let mut sse = 0.0;
             for p in &binned_points {
@@ -83,7 +98,10 @@ fn main() {
         }
     }
     let r2_a = 1.0 - (min_sse_a / ss_tot);
-    println!("Best Fit: Δp_norm = {:.4} * χ * exp(-χ / {:.4})", best_a, best_x0);
+    println!(
+        "Best Fit: Δp_norm = {:.4} * χ * exp(-χ / {:.4})",
+        best_a, best_x0
+    );
     println!("R-squared: {:.6}", r2_a);
 
     println!("\n--- Model B: Sigmoidal Saturation (L / (1 + exp(-k*(chi - xc)))) ---");
@@ -92,11 +110,14 @@ fn main() {
     let mut best_xc = 0.0;
     let mut min_sse_b = f64::INFINITY;
 
-    for l_int in 1..20 { // L from 0.1 to 2.0
+    for l_int in 1..20 {
+        // L from 0.1 to 2.0
         let l = l_int as f64 * 0.1;
-        for k_int in 1..50 { // k from 1 to 50
+        for k_int in 1..50 {
+            // k from 1 to 50
             let k = k_int as f64;
-            for xc_int in 1..40 { // xc from 0.01 to 0.4
+            for xc_int in 1..40 {
+                // xc from 0.01 to 0.4
                 let xc = xc_int as f64 * 0.01;
                 let mut sse = 0.0;
                 for p in &binned_points {
@@ -113,7 +134,10 @@ fn main() {
         }
     }
     let r2_b = 1.0 - (min_sse_b / ss_tot);
-    println!("Best Fit: Δp_norm = {:.4} / (1 + exp(-{:.4} * (χ - {:.4})))", best_l, best_k, best_xc);
+    println!(
+        "Best Fit: Δp_norm = {:.4} / (1 + exp(-{:.4} * (χ - {:.4})))",
+        best_l, best_k, best_xc
+    );
     println!("R-squared: {:.6}", r2_b);
 
     println!("\n=== VERDICT ===");
@@ -122,6 +146,9 @@ fn main() {
         println!("Equation: Δp_norm = {:.4}χ * e^(-χ/{:.4})", best_a, best_x0);
     } else {
         println!("Winner: Model B (Sigmoidal Saturation)");
-        println!("Equation: Δp_norm = {:.4} / (1 + e^(-{:.4}(χ - {:.4})))", best_l, best_k, best_xc);
+        println!(
+            "Equation: Δp_norm = {:.4} / (1 + e^(-{:.4}(χ - {:.4})))",
+            best_l, best_k, best_xc
+        );
     }
 }

@@ -1,7 +1,7 @@
+use fixedbitset::FixedBitSet;
+use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
-use rand::Rng;
-use fixedbitset::FixedBitSet;
 
 static VERTEX_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
 static EDGE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -77,7 +77,7 @@ impl Hypergraph {
 
     pub fn add_vertex(&mut self) -> Vertex {
         let v = Vertex::new();
-        
+
         let mut future = Self::init_bitset();
         Self::ensure_capacity(&mut future, v.id);
         future.insert(v.id as usize);
@@ -103,20 +103,34 @@ impl Hypergraph {
     // ---------- Causal structure ----------
 
     pub fn add_causal_relation(&mut self, u_id: u64, v_id: u64) {
-        if self.is_causally_related(u_id, v_id) { return; }
+        if self.is_causally_related(u_id, v_id) {
+            return;
+        }
 
         // 1-hop adjacency (Guarded against duplicate entries)
         if let Some(u) = self.vertices.get_mut(&u_id) {
-            if !u.children.contains(&v_id) { u.children.push(v_id); }
+            if !u.children.contains(&v_id) {
+                u.children.push(v_id);
+            }
         }
         if let Some(v) = self.vertices.get_mut(&v_id) {
-            if !v.parents.contains(&u_id) { v.parents.push(u_id); }
+            if !v.parents.contains(&u_id) {
+                v.parents.push(u_id);
+            }
         }
 
         // Transitive Update: Every p in J-(u) reaches every f in J+(v)
         // Optimization: Use bitwise OR logic
-        let past_u = self.causal_past.get(&u_id).cloned().unwrap_or_else(|| Self::init_bitset());
-        let future_v = self.causal_future.get(&v_id).cloned().unwrap_or_else(|| Self::init_bitset());
+        let past_u = self
+            .causal_past
+            .get(&u_id)
+            .cloned()
+            .unwrap_or_else(|| Self::init_bitset());
+        let future_v = self
+            .causal_future
+            .get(&v_id)
+            .cloned()
+            .unwrap_or_else(|| Self::init_bitset());
 
         for p_idx in past_u.ones() {
             let p_id = p_idx as u64;
@@ -141,7 +155,10 @@ impl Hypergraph {
     }
 
     pub fn merge_causal_identity(&mut self, id_keep: u64, id_remove: u64) {
-        if let (Some(f_remove), Some(p_remove)) = (self.causal_future.get(&id_remove).cloned(), self.causal_past.get(&id_remove).cloned()) {
+        if let (Some(f_remove), Some(p_remove)) = (
+            self.causal_future.get(&id_remove).cloned(),
+            self.causal_past.get(&id_remove).cloned(),
+        ) {
             if let Some(f_keep) = self.causal_future.get_mut(&id_keep) {
                 Self::ensure_capacity(f_keep, f_remove.len() as u64);
                 f_keep.union_with(&f_remove);
@@ -157,18 +174,23 @@ impl Hypergraph {
         self.causal_future.get(&u_id).map_or(false, |bs| {
             if (v_id as usize) < bs.len() {
                 bs.contains(v_id as usize)
-            } else { false }
+            } else {
+                false
+            }
         })
     }
 
     fn _touched_vertices(&self, v_id: u64) -> HashSet<u64> {
-        self.causal_future.get(&v_id)
+        self.causal_future
+            .get(&v_id)
             .map(|bs| bs.ones().map(|i| i as u64).collect())
             .unwrap_or_default()
     }
 
     pub fn scrub_ghost_bits(&mut self) {
-        if self.vertices.is_empty() { return; }
+        if self.vertices.is_empty() {
+            return;
+        }
         let max_id: u64 = *self.vertices.keys().max().unwrap_or(&0);
         let mut mask = FixedBitSet::with_capacity(max_id as usize + 1);
         for &id in self.vertices.keys() {
@@ -176,8 +198,10 @@ impl Hypergraph {
         }
 
         // Physically delete bitsets for dead vertices
-        self.causal_future.retain(|k, _| self.vertices.contains_key(k));
-        self.causal_past.retain(|k, _| self.vertices.contains_key(k));
+        self.causal_future
+            .retain(|k, _| self.vertices.contains_key(k));
+        self.causal_past
+            .retain(|k, _| self.vertices.contains_key(k));
 
         for bs in self.causal_future.values_mut() {
             bs.intersect_with(&mask);
@@ -188,13 +212,15 @@ impl Hypergraph {
     }
 
     pub fn causal_future(&self, v_id: u64) -> HashSet<u64> {
-        self.causal_future.get(&v_id)
+        self.causal_future
+            .get(&v_id)
             .map(|bs| bs.ones().map(|i| i as u64).collect())
             .unwrap_or_default()
     }
 
     pub fn causal_past(&self, v_id: u64) -> HashSet<u64> {
-        self.causal_past.get(&v_id)
+        self.causal_past
+            .get(&v_id)
             .map(|bs| bs.ones().map(|i| i as u64).collect())
             .unwrap_or_default()
     }

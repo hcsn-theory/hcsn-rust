@@ -1,8 +1,8 @@
+use hcsn_rust::hypergraph::Hypergraph;
+use hcsn_rust::observables::{worldline_interaction_graph, TopologicalKnot};
+use hcsn_rust::rewrite_engine::RewriteEngine;
 use std::collections::HashMap;
 use std::time::Instant;
-use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
-use hcsn_rust::observables::{worldline_interaction_graph, TopologicalKnot};
 
 const STEPS_DEFAULT: usize = 20000;
 const TAU_C: usize = 600;
@@ -55,7 +55,9 @@ impl TrackerState {
 
 fn compute_mle_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
     let n = lifetimes.len() as f64;
-    if n < 5.0 { return 0.0; }
+    if n < 5.0 {
+        return 0.0;
+    }
     let mut sum_ln = 0.0;
     for &l in lifetimes {
         sum_ln += (l as f64 / x_min).ln();
@@ -65,16 +67,24 @@ fn compute_mle_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
 
 fn compute_correlation(x: &[f64], y: &[f64]) -> f64 {
     let n = x.len();
-    if n < 2 { return 1.0; }
+    if n < 2 {
+        return 1.0;
+    }
     let (mut sum_x, mut sum_y, mut sum_xx, mut sum_yy, mut sum_xy) = (0.0, 0.0, 0.0, 0.0, 0.0);
     for i in 0..n {
-        sum_x += x[i]; sum_y += y[i];
-        sum_xx += x[i] * x[i]; sum_yy += y[i] * y[i];
+        sum_x += x[i];
+        sum_y += y[i];
+        sum_xx += x[i] * x[i];
+        sum_yy += y[i] * y[i];
         sum_xy += x[i] * y[i];
     }
     let num = n as f64 * sum_xy - sum_x * sum_y;
     let den = ((n as f64 * sum_xx - sum_x * sum_x) * (n as f64 * sum_yy - sum_y * sum_y)).sqrt();
-    if den == 0.0 { 0.0 } else { num / den }
+    if den == 0.0 {
+        0.0
+    } else {
+        num / den
+    }
 }
 
 fn main() {
@@ -105,7 +115,7 @@ fn main() {
     let start = Instant::now();
     for step in 1..=steps {
         engine.step();
-        
+
         if step % 10 == 0 {
             let inter = worldline_interaction_graph(&engine.h, 0.0);
             for tracker in trackers.iter_mut() {
@@ -124,24 +134,44 @@ fn main() {
         }
 
         if step % 5000 == 0 {
-            println!("Progress: {}/{} steps ({:.1}s)", step, steps, start.elapsed().as_secs_f64());
+            println!(
+                "Progress: {}/{} steps ({:.1}s)",
+                step,
+                steps,
+                start.elapsed().as_secs_f64()
+            );
         }
     }
 
     println!("\nSimulation Complete. Analyzing Results...");
-    for t in trackers.iter_mut() { t.record_final_identities(); }
+    for t in trackers.iter_mut() {
+        t.record_final_identities();
+    }
 
     println!("| Coherence | Overlap | Count | Alpha | PSI | Lifetime Correlation (vs Baseline) |");
     println!("|-----------|---------|-------|-------|-----|-----------------------------------|");
 
     let baseline_idx = 0;
     for tracker in trackers.iter() {
-        let lifetimes_all: Vec<usize> = tracker.dead_knots.iter().map(|k| k.age).chain(tracker.active_knots.values().map(|k| k.age)).collect();
+        let lifetimes_all: Vec<usize> = tracker
+            .dead_knots
+            .iter()
+            .map(|k| k.age)
+            .chain(tracker.active_knots.values().map(|k| k.age))
+            .collect();
         let total_candidates = lifetimes_all.len();
-        let particle_lifetimes: Vec<usize> = lifetimes_all.iter().cloned().filter(|&l| l >= TAU_C).collect();
+        let particle_lifetimes: Vec<usize> = lifetimes_all
+            .iter()
+            .cloned()
+            .filter(|&l| l >= TAU_C)
+            .collect();
         let particle_count = particle_lifetimes.len();
         let alpha = compute_mle_alpha(&particle_lifetimes, TAU_C as f64);
-        let psi = if total_candidates > 0 { particle_count as f64 / total_candidates as f64 } else { 0.0 };
+        let psi = if total_candidates > 0 {
+            particle_count as f64 / total_candidates as f64
+        } else {
+            0.0
+        };
 
         let mut x = Vec::new();
         let mut y = Vec::new();
@@ -153,12 +183,19 @@ fn main() {
         }
         let correlation = compute_correlation(&x, &y);
 
-        println!("| {:<9.1} | {:<7.1} | {:<5} | {:<5.2} | {:<3.2} | {:<33.2} |", 
-            tracker.config.coh, tracker.config.ov, particle_count, alpha, psi, correlation);
+        println!(
+            "| {:<9.1} | {:<7.1} | {:<5} | {:<5.2} | {:<3.2} | {:<33.2} |",
+            tracker.config.coh, tracker.config.ov, particle_count, alpha, psi, correlation
+        );
     }
 
     let baseline = &trackers[baseline_idx];
-    let lifetimes: Vec<usize> = baseline.dead_knots.iter().map(|k| k.age).chain(baseline.active_knots.values().map(|k| k.age)).collect();
+    let lifetimes: Vec<usize> = baseline
+        .dead_knots
+        .iter()
+        .map(|k| k.age)
+        .chain(baseline.active_knots.values().map(|k| k.age))
+        .collect();
     println!("\nHazard Rate Analysis (Baseline θ=1.2, OV=0.5):");
     println!("| Tau Range | Deaths | At Risk | Hazard Rate h(τ) |");
     println!("|-----------|--------|---------|------------------|");
@@ -166,8 +203,19 @@ fn main() {
         let start_tau = i * 1000;
         let end_tau = (i + 1) * 1000;
         let at_risk = lifetimes.iter().filter(|&&l| l >= start_tau).count();
-        let deaths = baseline.dead_knots.iter().filter(|k| k.age >= start_tau && k.age < end_tau).count();
-        let h = if at_risk > 0 { deaths as f64 / at_risk as f64 } else { 0.0 };
-        println!("| {}-{} | {:<6} | {:<7} | {:<16.4} |", start_tau, end_tau, deaths, at_risk, h);
+        let deaths = baseline
+            .dead_knots
+            .iter()
+            .filter(|k| k.age >= start_tau && k.age < end_tau)
+            .count();
+        let h = if at_risk > 0 {
+            deaths as f64 / at_risk as f64
+        } else {
+            0.0
+        };
+        println!(
+            "| {}-{} | {:<6} | {:<7} | {:<16.4} |",
+            start_tau, end_tau, deaths, at_risk, h
+        );
     }
 }

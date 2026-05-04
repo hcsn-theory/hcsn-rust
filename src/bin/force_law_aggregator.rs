@@ -1,15 +1,15 @@
-use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::{RewriteEngine, ConservationMode};
-use hcsn_rust::persistence::Persistence;
-use rayon::prelude::*;
-use std::io::{self, Write};
-use std::sync::{Arc, Mutex};
-use std::fs::File;
-use std::env;
-use std::process::Command;
-use std::fs;
-use serde_json::json;
 use chrono::Local;
+use hcsn_rust::hypergraph::Hypergraph;
+use hcsn_rust::persistence::Persistence;
+use hcsn_rust::rewrite_engine::{ConservationMode, RewriteEngine};
+use rayon::prelude::*;
+use serde_json::json;
+use std::env;
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+use std::process::Command;
+use std::sync::{Arc, Mutex};
 
 fn get_mem_usage_percent() -> f64 {
     if let Ok(mem) = fs::read_to_string("/proc/meminfo") {
@@ -17,10 +17,18 @@ fn get_mem_usage_percent() -> f64 {
         let mut available = 0.0;
         for line in mem.lines() {
             if line.contains("MemTotal:") {
-                total = line.split_whitespace().nth(1).and_then(|s| s.parse::<f64>().ok()).unwrap_or(1.0);
+                total = line
+                    .split_whitespace()
+                    .nth(1)
+                    .and_then(|s| s.parse::<f64>().ok())
+                    .unwrap_or(1.0);
             }
             if line.contains("MemAvailable:") {
-                available = line.split_whitespace().nth(1).and_then(|s| s.parse::<f64>().ok()).unwrap_or(0.0);
+                available = line
+                    .split_whitespace()
+                    .nth(1)
+                    .and_then(|s| s.parse::<f64>().ok())
+                    .unwrap_or(0.0);
             }
         }
         return (1.0 - (available / total)) * 100.0;
@@ -54,20 +62,20 @@ fn main() {
         .unwrap_or_default();
 
     println!("=== HCSN PARALLEL INTERACTION AGGREGATOR (v6.0.0) ===");
-    
+
     let p_create = env::var("HCSN_P_CREATE")
         .unwrap_or_else(|_| "0.64".to_string())
         .parse()
         .unwrap_or(0.64);
-        
+
     let steps_per_thread = env::var("HCSN_STEPS")
         .unwrap_or_else(|_| "40000".to_string())
         .parse()
         .unwrap_or(40000);
 
-    let emergence_mode_str = env::var("HCSN_EMERGENCE_MODE")
-        .unwrap_or_else(|_| "Assisted".to_string());
-    
+    let emergence_mode_str =
+        env::var("HCSN_EMERGENCE_MODE").unwrap_or_else(|_| "Assisted".to_string());
+
     let emergence_mode = match emergence_mode_str.as_str() {
         "Control" => hcsn_rust::rewrite_engine::EmergenceMode::Control,
         "Forced" => hcsn_rust::rewrite_engine::EmergenceMode::Forced,
@@ -88,7 +96,7 @@ fn main() {
     let mut header_writer = writer;
     Persistence::write_header(&mut header_writer).unwrap();
     header_writer.flush().unwrap();
-    
+
     let shared_writer = Arc::new(Mutex::new(header_writer));
     let diagnostics = Arc::new(Mutex::new(vec![json!({}); num_threads]));
 
@@ -97,9 +105,11 @@ fn main() {
         // Seed vacuum defects for aggregator (Pre-interaction state)
         for _ in 0..16 {
             let mut knot_nodes = Vec::new();
-            for _ in 0..4 { knot_nodes.push(h.add_vertex().id); }
+            for _ in 0..4 {
+                knot_nodes.push(h.add_vertex().id);
+            }
             for n1 in 0..4 {
-                for n2 in n1+1..4 {
+                for n2 in n1 + 1..4 {
                     h.add_causal_relation(knot_nodes[n1], knot_nodes[n2]);
                     h.add_hyperedge(vec![knot_nodes[n1], knot_nodes[n2]]);
                 }
@@ -107,7 +117,11 @@ fn main() {
         }
 
         let seed = base_seed + tid as u64;
-        let seed_name = if seed == 42 { "baseline".to_string() } else { format!("repeat {}", tid) };
+        let seed_name = if seed == 42 {
+            "baseline".to_string()
+        } else {
+            format!("repeat {}", tid)
+        };
 
         let mut engine = RewriteEngine::new(h, p_create, Some(seed));
         engine.pure_mode = false;
@@ -117,10 +131,13 @@ fn main() {
         engine.max_steps = steps_per_thread;
         engine.verbose = false;
 
-        println!("  Thread {}: Initiating {} step parallel simulation (seed: {}, branch: {})...", tid, steps_per_thread, seed, seed_name);
+        println!(
+            "  Thread {}: Initiating {} step parallel simulation (seed: {}, branch: {})...",
+            tid, steps_per_thread, seed, seed_name
+        );
         for s in 1..=steps_per_thread {
             engine.step();
-            
+
             // Periodic Stream Flush (SSD Persistence @ 2,000 steps)
             if s % 2000 == 0 || s == steps_per_thread {
                 let mut writer_lock = shared_writer.lock().unwrap();
@@ -139,8 +156,11 @@ fn main() {
             if s % 5000 == 0 || s == steps_per_thread {
                 let mem = get_mem_usage_percent();
                 if mem > 92.0 {
-                    println!("\n[!] CRITICAL MEMORY ALERT: {:.1}% usage. HALTING THREAD {}.", mem, tid);
-                    break; 
+                    println!(
+                        "\n[!] CRITICAL MEMORY ALERT: {:.1}% usage. HALTING THREAD {}.",
+                        mem, tid
+                    );
+                    break;
                 }
             }
         }
@@ -166,7 +186,11 @@ fn main() {
     let mut seeds_used = Vec::new();
     for tid in 0..num_threads {
         let s = base_seed + tid as u64;
-        let name = if s == 42 { "baseline".to_string() } else { format!("repeat {}", tid) };
+        let name = if s == 42 {
+            "baseline".to_string()
+        } else {
+            format!("repeat {}", tid)
+        };
         seeds_used.push(json!({"tid": tid, "seed": s, "name": name}));
     }
 

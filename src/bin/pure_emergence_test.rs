@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::compute_omega;
+use hcsn_rust::rewrite_engine::RewriteEngine;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs;
 
 #[derive(Serialize)]
@@ -15,13 +15,16 @@ struct PureStats {
 }
 
 fn calculate_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
-    let filtered: Vec<f64> = lifetimes.iter()
+    let filtered: Vec<f64> = lifetimes
+        .iter()
         .filter(|&&l| l as f64 >= x_min)
         .map(|&l| l as f64)
         .collect();
-    
-    if filtered.is_empty() { return 0.0; }
-    
+
+    if filtered.is_empty() {
+        return 0.0;
+    }
+
     let n = filtered.len() as f64;
     let sum_log = filtered.iter().map(|&x| (x / x_min).ln()).sum::<f64>();
     1.0 + n / sum_log
@@ -29,8 +32,10 @@ fn calculate_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
 
 fn main() {
     println!("=== HCSN PURE EMERGENCE TEST ===");
-    println!("Goal: Test if particles emerge from rules alone (no memory/stability/coherence-gates).");
-    
+    println!(
+        "Goal: Test if particles emerge from rules alone (no memory/stability/coherence-gates)."
+    );
+
     let mut h = Hypergraph::new();
     // Seed with a small 4-vertex clique
     let v1 = h.add_vertex().id;
@@ -60,17 +65,29 @@ fn main() {
         if i % 1000 == 0 {
             let active = engine.active_knots.len();
             knot_counts.push(active);
-            println!("  t={} | active_knots={} | Ω={:.4}", i, active, compute_omega(&hcsn_rust::observables::worldline_interaction_graph(&engine.h, 0.0)));
-            
+            println!(
+                "  t={} | active_knots={} | Ω={:.4}",
+                i,
+                active,
+                compute_omega(&hcsn_rust::observables::worldline_interaction_graph(
+                    &engine.h, 0.0
+                ))
+            );
+
             // Eager Save
             let mut current_lifetimes = Vec::new();
-            for k in &engine.dead_knots { current_lifetimes.push(k.age); }
-            for k in engine.active_knots.values() { current_lifetimes.push(k.age); }
-            
+            for k in &engine.dead_knots {
+                current_lifetimes.push(k.age);
+            }
+            for k in engine.active_knots.values() {
+                current_lifetimes.push(k.age);
+            }
+
             let max_l = *current_lifetimes.iter().max().unwrap_or(&0);
-            let mean_l = current_lifetimes.iter().sum::<usize>() as f64 / current_lifetimes.len() as f64;
+            let mean_l =
+                current_lifetimes.iter().sum::<usize>() as f64 / current_lifetimes.len() as f64;
             let alpha = calculate_alpha(&current_lifetimes, 50.0);
-            
+
             let stats = PureStats {
                 total_knots_detected: current_lifetimes.len(),
                 max_lifetime: max_l,
@@ -78,16 +95,22 @@ fn main() {
                 alpha,
                 emergence_level: "IN-PROGRESS".to_string(),
             };
-            
+
             fs::create_dir_all("exports").ok();
-            let _ = fs::write("exports/particle_lifetimes_pure.json", serde_json::to_string_pretty(&current_lifetimes).unwrap());
-            let _ = fs::write("exports/pure_emergence_summary.json", serde_json::to_string_pretty(&stats).unwrap());
+            let _ = fs::write(
+                "exports/particle_lifetimes_pure.json",
+                serde_json::to_string_pretty(&current_lifetimes).unwrap(),
+            );
+            let _ = fs::write(
+                "exports/pure_emergence_summary.json",
+                serde_json::to_string_pretty(&stats).unwrap(),
+            );
             println!("  [Eager Save] Progress persisted at t={}", i);
         }
     }
 
     println!("\nAnalysis of Resulting Structures:");
-    
+
     let mut lifetimes = Vec::new();
     for k in &engine.dead_knots {
         lifetimes.push(k.age);
@@ -135,8 +158,16 @@ fn main() {
     };
 
     fs::create_dir_all("exports").unwrap();
-    fs::write("exports/particle_lifetimes_pure.json", serde_json::to_string_pretty(&lifetimes).unwrap()).unwrap();
-    fs::write("exports/pure_emergence_summary.json", serde_json::to_string_pretty(&stats).unwrap()).unwrap();
+    fs::write(
+        "exports/particle_lifetimes_pure.json",
+        serde_json::to_string_pretty(&lifetimes).unwrap(),
+    )
+    .unwrap();
+    fs::write(
+        "exports/pure_emergence_summary.json",
+        serde_json::to_string_pretty(&stats).unwrap(),
+    )
+    .unwrap();
 
     // Hazard Rate Table
     println!("\nHazard Rate Analysis (Pure Mode):");
@@ -161,7 +192,10 @@ fn main() {
         let at_risk = life_buckets.get(&i).unwrap_or(&0);
         if *at_risk > 0 {
             let h_tau = *deaths as f64 / *at_risk as f64;
-            println!("| {}-{} | {} | {} | {:.4} |", start, end, deaths, at_risk, h_tau);
+            println!(
+                "| {}-{} | {} | {} | {:.4} |",
+                start, end, deaths, at_risk, h_tau
+            );
         }
     }
 }

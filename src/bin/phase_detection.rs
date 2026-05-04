@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::compute_omega;
+use hcsn_rust::rewrite_engine::RewriteEngine;
 use serde::Serialize;
-use std::fs;
+use std::collections::HashMap;
 use std::env;
+use std::fs;
 
 #[derive(Serialize)]
 struct PhaseStats {
@@ -16,13 +16,16 @@ struct PhaseStats {
 }
 
 fn calculate_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
-    let filtered: Vec<f64> = lifetimes.iter()
+    let filtered: Vec<f64> = lifetimes
+        .iter()
         .filter(|&&l| l as f64 >= x_min)
         .map(|&l| l as f64)
         .collect();
-    
-    if filtered.is_empty() { return 0.0; }
-    
+
+    if filtered.is_empty() {
+        return 0.0;
+    }
+
     let n = filtered.len() as f64;
     let sum_log = filtered.iter().map(|&x| (x / x_min).ln()).sum::<f64>();
     1.0 + n / sum_log
@@ -31,16 +34,16 @@ fn calculate_alpha(lifetimes: &[usize], x_min: f64) -> f64 {
 fn main() {
     // Performance safety: Limit threads
     env::set_var("RAYON_NUM_THREADS", "4");
-    
+
     println!("=== HCSN PHASE-DETECTION EXPERIMENT ===");
     println!("Goal: Find the Critical Particle Regime (1.8 <= α <= 2.2)");
-    
+
     // Set parameters for Phase 10c: Search for Criticality
     let p_create = 0.67;
     let nu = 0.975;
     let gamma = 2.0;
     let mu = 0.3;
-    
+
     env::set_var("HCSN_NU", nu.to_string());
     env::set_var("HCSN_GAMMA", gamma.to_string());
     env::set_var("HCSN_MU", mu.to_string());
@@ -78,16 +81,22 @@ fn main() {
         engine.step();
         if i % 1000 == 0 {
             let active = engine.active_knots.len();
-            let omega = compute_omega(&hcsn_rust::observables::worldline_interaction_graph(&engine.h, 0.0));
+            let omega = compute_omega(&hcsn_rust::observables::worldline_interaction_graph(
+                &engine.h, 0.0,
+            ));
             println!("  t={} | active_knots={} | Ω={:.4}", i, active, omega);
         }
     }
 
     println!("\n=== Final Analysis ===");
-    
+
     let mut lifetimes = Vec::new();
-    for k in &engine.dead_knots { lifetimes.push(k.age); }
-    for k in engine.active_knots.values() { lifetimes.push(k.age); }
+    for k in &engine.dead_knots {
+        lifetimes.push(k.age);
+    }
+    for k in engine.active_knots.values() {
+        lifetimes.push(k.age);
+    }
 
     if lifetimes.is_empty() {
         println!("ERROR: No structures detected. Try increasing p_create.");
@@ -117,7 +126,9 @@ fn main() {
 
     for &l in &lifetimes {
         let b = l / bucket_size;
-        for i in 0..=b { *life_buckets.entry(i).or_insert(0) += 1; }
+        for i in 0..=b {
+            *life_buckets.entry(i).or_insert(0) += 1;
+        }
         *death_buckets.entry(b).or_insert(0) += 1;
     }
 
@@ -131,15 +142,24 @@ fn main() {
         if at_risk > 0 {
             let h = deaths as f64 / at_risk as f64;
             hazards.push(h);
-            println!("| {}-{} | {} | {} | {:.4} |", start, end, deaths, at_risk, h);
+            println!(
+                "| {}-{} | {} | {} | {:.4} |",
+                start, end, deaths, at_risk, h
+            );
         }
     }
 
     let hazard_behavior = if hazards.len() >= 2 {
-        if hazards[0] > *hazards.last().unwrap() { "DECREASING" }
-        else if hazards[0] < *hazards.last().unwrap() { "INCREASING" }
-        else { "FLAT" }
-    } else { "INSUFFICIENT DATA" };
+        if hazards[0] > *hazards.last().unwrap() {
+            "DECREASING"
+        } else if hazards[0] < *hazards.last().unwrap() {
+            "INCREASING"
+        } else {
+            "FLAT"
+        }
+    } else {
+        "INSUFFICIENT DATA"
+    };
 
     println!("\n----------------Summary------------------");
     println!("α = {:.3}", alpha);
@@ -168,6 +188,12 @@ fn main() {
         hazard_trend: hazard_behavior.to_string(),
     };
     fs::create_dir_all("exports").ok();
-    let _ = fs::write("exports/phase_detection_summary.json", serde_json::to_string_pretty(&stats).unwrap());
-    let _ = fs::write("exports/phase_detection_lifetimes.json", serde_json::to_string_pretty(&lifetimes).unwrap());
+    let _ = fs::write(
+        "exports/phase_detection_summary.json",
+        serde_json::to_string_pretty(&stats).unwrap(),
+    );
+    let _ = fs::write(
+        "exports/phase_detection_lifetimes.json",
+        serde_json::to_string_pretty(&lifetimes).unwrap(),
+    );
 }

@@ -15,6 +15,8 @@ pub struct PhysicsParams {
     pub noise_bias: f64,
     pub defect_injection: f64,
     pub geometry_freeze: f64,
+    pub enable_conservation_patches: bool,
+    pub export_mechanisms: bool,
 }
 
 impl PhysicsParams {
@@ -23,12 +25,12 @@ impl PhysicsParams {
             .unwrap_or_else(|_| "0.15".to_string())
             .parse()
             .unwrap_or(0.15);
-            
+
         let inertia_scale = env::var("HCSN_INERTIA_SCALE")
             .unwrap_or_else(|_| "1.0".to_string())
             .parse()
             .unwrap_or(1.0);
-            
+
         let interaction_boost = env::var("HCSN_INTERACTION_BOOST")
             .unwrap_or_else(|_| "1.02".to_string())
             .parse()
@@ -54,6 +56,12 @@ impl PhysicsParams {
             .parse()
             .unwrap_or(0.0);
 
+        let enable_conservation_patches =
+            env::var("HCSN_PATCHES").unwrap_or_else(|_| "1".to_string()) != "0";
+
+        let export_mechanisms =
+            env::var("HCSN_EXPORT_MECHANISMS").unwrap_or_else(|_| "0".to_string()) == "1";
+
         Self {
             gamma_defect,
             inertia_scale,
@@ -64,6 +72,8 @@ impl PhysicsParams {
             noise_bias: 0.0,
             defect_injection,
             geometry_freeze: 0.9,
+            enable_conservation_patches,
+            export_mechanisms,
         }
     }
 }

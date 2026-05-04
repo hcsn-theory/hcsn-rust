@@ -1,11 +1,11 @@
-use std::time::Instant;
 use serde_json::json;
 use std::fs::File;
 use std::io::Write;
+use std::time::Instant;
 
 use hcsn_rust::hypergraph::Hypergraph;
+use hcsn_rust::observables::{compute_omega, worldline_interaction_graph};
 use hcsn_rust::rewrite_engine::RewriteEngine;
-use hcsn_rust::observables::{worldline_interaction_graph, compute_omega};
 
 const STABILIZE_STEPS_BEFORE_PROBE: usize = 150;
 const INTERACTION_STEPS: usize = 1500;
@@ -21,7 +21,7 @@ fn main() {
     h.add_hyperedge(vec![v1.id, v2.id]);
 
     let mut engine = RewriteEngine::new(h, 0.6, Some(SEED));
-    
+
     // -------------------------------
     // Reach target Ω
     // -------------------------------
@@ -41,7 +41,7 @@ fn main() {
     if !ok {
         println!("[warn] First proto-particle injection failed — continuing anyway");
     }
-    
+
     let first_injection_time = engine.time;
 
     for _ in 0..STABILIZE_STEPS_BEFORE_PROBE {
@@ -76,22 +76,30 @@ fn main() {
     for _ in 0..INTERACTION_STEPS {
         let t0 = Instant::now();
         engine.step();
-        
+
         if engine.time % 200 == 0 {
-            println!("[geom-live] topo={} xi={}", engine.topo_distance_memory.len(), engine.xi_distance_memory.len());
+            println!(
+                "[geom-live] topo={} xi={}",
+                engine.topo_distance_memory.len(),
+                engine.xi_distance_memory.len()
+            );
         }
-        
+
         let t1 = Instant::now();
         let inter = worldline_interaction_graph(&engine.h, 0.0);
-        
-        let xi_count = engine.xi.values().filter(|&&x| x > engine.xi_threshold && x.is_finite()).count();
-        
+
+        let xi_count = engine
+            .xi
+            .values()
+            .filter(|&&x| x > engine.xi_threshold && x.is_finite())
+            .count();
+
         // Count clusters (simplification logic for stats only)
         let topo_pairs = engine.topo_distance_memory.len();
         let xi_pairs = engine.xi_distance_memory.len();
-        
+
         let t2 = Instant::now();
-        
+
         let omega = compute_omega(&inter);
 
         interaction_log.push(json!({
@@ -137,8 +145,10 @@ fn main() {
 
     // Write to file
     std::fs::create_dir_all("exports").unwrap_or_default();
-    let mut file = File::create("exports/interaction_experiment.json").expect("Unable to create file");
-    file.write_all(out.to_string().as_bytes()).expect("Unable to write data");
+    let mut file =
+        File::create("exports/interaction_experiment.json").expect("Unable to create file");
+    file.write_all(out.to_string().as_bytes())
+        .expect("Unable to write data");
 
     println!("Saved → exports/interaction_experiment.json");
 }

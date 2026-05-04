@@ -1,8 +1,8 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::env;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::env;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
@@ -24,27 +24,34 @@ struct FitResult {
 
 fn main() {
     println!("=== HCSN BRANCHING LAW ROBUSTNESS ATTACK ===");
-    
+
     let path = env::var("HCSN_IN_FILE")
         .unwrap_or_else(|_| "exports/interaction_points_raw.csv".to_string());
-        
+
     println!("Target Dataset: {}", path);
     let file = File::open(&path).expect("Could not open interaction data file");
     let reader = BufReader::new(file);
-    
+
     let mut original_data = Vec::new();
     for (i, line) in reader.lines().enumerate() {
-        if i == 0 { continue; } // skip header
+        if i == 0 {
+            continue;
+        } // skip header
         let l = line.unwrap();
         let parts: Vec<f64> = l.split(',').map(|s| s.parse().unwrap_or(0.0)).collect();
         if parts.len() >= 7 {
             original_data.push(Event {
-                chi: parts[0], dp_norm: parts[1], coh: parts[2],
-                stab: parts[3], rad: parts[4], size: parts[5], ratio: parts[6],
+                chi: parts[0],
+                dp_norm: parts[1],
+                coh: parts[2],
+                stab: parts[3],
+                rad: parts[4],
+                size: parts[5],
+                ratio: parts[6],
             });
         }
     }
-    
+
     println!("Total Samples: {}", original_data.len());
 
     // 1. ORIGINAL FIT
@@ -69,8 +76,14 @@ fn main() {
 
     // 3. NOISE TEST
     let mut noise_data = original_data.clone();
-    let min_s = original_data.iter().map(|e| e.stab).fold(f64::INFINITY, f64::min);
-    let max_s = original_data.iter().map(|e| e.stab).fold(f64::NEG_INFINITY, f64::max);
+    let min_s = original_data
+        .iter()
+        .map(|e| e.stab)
+        .fold(f64::INFINITY, f64::min);
+    let max_s = original_data
+        .iter()
+        .map(|e| e.stab)
+        .fold(f64::NEG_INFINITY, f64::max);
     for e in noise_data.iter_mut() {
         e.stab = rng.gen_range(min_s..max_s);
     }
@@ -94,10 +107,15 @@ fn main() {
         slopes.push(f.slope);
         println!("    Iter {}: Slope = {:.6} (R²={:.4})", i, f.slope, f.r2);
     }
-    
+
     let mean_slope: f64 = slopes.iter().sum::<f64>() / slopes.len() as f64;
-    let var_slope: f64 = slopes.iter().map(|s| (s - mean_slope).powi(2)).sum::<f64>() / slopes.len() as f64;
-    println!("    Mean Slope: {:.6} ± {:.6}", mean_slope, var_slope.sqrt());
+    let var_slope: f64 =
+        slopes.iter().map(|s| (s - mean_slope).powi(2)).sum::<f64>() / slopes.len() as f64;
+    println!(
+        "    Mean Slope: {:.6} ± {:.6}",
+        mean_slope,
+        var_slope.sqrt()
+    );
 
     // VERDICT
     println!("\n=== FINAL VERDICT ===");
@@ -110,40 +128,64 @@ fn main() {
         println!("The anti-correlation between Stability and Reflection is non-random.");
     } else {
         println!(">>> RESULT: POTENTIAL ARTIFACT <<<");
-        if !slope_collapsed { println!("- Shuffle test did not collapse slope."); }
-        if !r2_collapsed { println!("- Shuffle test did not collapse R²."); }
-        if !bootstrap_stable { println!("- Bootstrap variance is high: fit is unstable."); }
+        if !slope_collapsed {
+            println!("- Shuffle test did not collapse slope.");
+        }
+        if !r2_collapsed {
+            println!("- Shuffle test did not collapse R².");
+        }
+        if !bootstrap_stable {
+            println!("- Bootstrap variance is high: fit is unstable.");
+        }
     }
 }
 
 fn fit_branching_ratio(data: &Vec<Event>) -> FitResult {
-    if data.len() < 20 { return FitResult { slope: 0.0, intercept: 0.0, r2: 0.0 }; }
-    
+    if data.len() < 20 {
+        return FitResult {
+            slope: 0.0,
+            intercept: 0.0,
+            r2: 0.0,
+        };
+    }
+
     // 1. Equal-N Binning (Adaptive)
     let mut sorted_data = data.clone();
-    sorted_data.sort_by(|a, b| a.stab.partial_cmp(&b.stab).unwrap_or(std::cmp::Ordering::Equal));
-    
+    sorted_data.sort_by(|a, b| {
+        a.stab
+            .partial_cmp(&b.stab)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
     let n_bins = 10;
     let samples_per_bin = sorted_data.len() / n_bins;
-    
+
     let mut x_points = Vec::new();
     let mut y_points = Vec::new();
-    
+
     for i in 0..n_bins {
         let start = i * samples_per_bin;
-        let end = if i == n_bins - 1 { sorted_data.len() } else { (i + 1) * samples_per_bin };
+        let end = if i == n_bins - 1 {
+            sorted_data.len()
+        } else {
+            (i + 1) * samples_per_bin
+        };
         let chunk = &sorted_data[start..end];
-        
+
         let mean_s = chunk.iter().map(|e| e.stab).sum::<f64>() / chunk.len() as f64;
         let n_drag = chunk.iter().filter(|e| e.dp_norm > 0.1).count();
         let p_drag = n_drag as f64 / chunk.len() as f64;
-        
+
         x_points.push(mean_s);
         y_points.push(p_drag);
     }
 
     if x_points.len() < 2 {
-        return FitResult { slope: 0.0, intercept: 0.0, r2: 0.0 };
+        return FitResult {
+            slope: 0.0,
+            intercept: 0.0,
+            r2: 0.0,
+        };
     }
 
     // Linear Regression (OLS)
@@ -167,5 +209,9 @@ fn fit_branching_ratio(data: &Vec<Event>) -> FitResult {
     let a = mean_y - b * mean_x;
     let r2 = (ss_xy * ss_xy) / (ss_xx * ss_yy);
 
-    FitResult { slope: b, intercept: a, r2 }
+    FitResult {
+        slope: b,
+        intercept: a,
+        r2,
+    }
 }

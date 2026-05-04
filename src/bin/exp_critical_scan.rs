@@ -1,6 +1,6 @@
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::{average_coordination, myrheim_meyer_dimension};
+use hcsn_rust::rewrite_engine::RewriteEngine;
 
 fn run_universe(p_create: f64, steps: usize, seed: u64) -> (usize, f64, Option<f64>) {
     let mut h = Hypergraph::new();
@@ -11,7 +11,7 @@ fn run_universe(p_create: f64, steps: usize, seed: u64) -> (usize, f64, Option<f
     h.add_hyperedge(vec![v1.id, v2.id]);
 
     let mut engine = RewriteEngine::new(h, p_create, Some(seed));
-    
+
     // Silence verbose logs for critical scan
     engine.verbose = false;
 
@@ -39,9 +39,6 @@ fn main() {
             None => "None".to_string(),
         };
 
-        println!(
-            "{:7.2} | {:8} | {:6.2} | {}",
-            p, vertices, k_avg, dim_str
-        );
+        println!("{:7.2} | {:8} | {:6.2} | {}", p, vertices, k_avg, dim_str);
     }
 }

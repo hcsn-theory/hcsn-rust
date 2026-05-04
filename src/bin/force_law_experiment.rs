@@ -1,13 +1,13 @@
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::rewrite_engine::RewriteEngine;
 use hcsn_rust::observables::compute_omega;
+use hcsn_rust::rewrite_engine::RewriteEngine;
 use serde::Serialize;
-use std::fs;
 use std::env;
+use std::fs;
 
 #[derive(Serialize)]
 struct ForceLawStats {
-    total_samples: usize, // Independent A/B points
+    total_samples: usize,      // Independent A/B points
     total_interactions: usize, // Event count
     chi_bins: Vec<ChiBin>,
     scat_dist: ScatteringDist,
@@ -38,8 +38,12 @@ struct SymmetryProfile {
     asymmetric: f64, // eta >= 0.2
 }
 
-fn dot(a: (f64, f64), b: (f64, f64)) -> f64 { a.0 * b.0 + a.1 * b.1 }
-fn mag(a: (f64, f64)) -> f64 { (a.0 * a.0 + a.1 * a.1).sqrt().max(1e-6) }
+fn dot(a: (f64, f64), b: (f64, f64)) -> f64 {
+    a.0 * b.0 + a.1 * b.1
+}
+fn mag(a: (f64, f64)) -> f64 {
+    (a.0 * a.0 + a.1 * a.1).sqrt().max(1e-6)
+}
 
 fn main() {
     env::set_var("RAYON_NUM_THREADS", "4");
@@ -50,7 +54,7 @@ fn main() {
     let nu = 0.975;
     let gamma = 2.0;
     let mu = 0.3;
-    
+
     env::set_var("HCSN_NU", nu.to_string());
     env::set_var("HCSN_GAMMA", gamma.to_string());
     env::set_var("HCSN_MU", mu.to_string());
@@ -62,7 +66,7 @@ fn main() {
     let v4 = h.add_vertex().id;
     let nodes = vec![v1, v2, v3, v4];
     for i in 0..4 {
-        for j in i+1..4 {
+        for j in i + 1..4 {
             h.add_causal_relation(nodes[i], nodes[j]);
             h.add_hyperedge(vec![nodes[i], nodes[j]]);
         }
@@ -80,15 +84,22 @@ fn main() {
         engine.step();
         if i % 2000 == 0 {
             let active = engine.active_knots.len();
-            let omega = compute_omega(&hcsn_rust::observables::worldline_interaction_graph(&engine.h, 0.0));
-            println!("  t={} | active_knots={} | Ω={:.4} | interactions_logged={}", 
-                     i, active, omega, engine.interaction_events.len());
+            let omega = compute_omega(&hcsn_rust::observables::worldline_interaction_graph(
+                &engine.h, 0.0,
+            ));
+            println!(
+                "  t={} | active_knots={} | Ω={:.4} | interactions_logged={}",
+                i,
+                active,
+                omega,
+                engine.interaction_events.len()
+            );
         }
     }
 
     println!("\n=== Extracting Corrected Dataset ===");
     let raw_events = &engine.interaction_events;
-    
+
     let mut total_samples = 0;
     let mut bin_data: Vec<(f64, f64, String, Vec<f64>, Vec<f64>)> = vec![
         (0.00, 0.05, "0.00-0.05".to_string(), Vec::new(), Vec::new()),
@@ -115,11 +126,11 @@ fn main() {
         if let Some(post_a) = ev.post_a {
             let p_pre = ev.pre_a.2.abs();
             let p_post = post_a.2.abs();
-            
+
             if p_pre >= 0.01 {
                 let dp_norm = (p_post - p_pre).abs() / (p_pre + p_post + EPS);
                 dp_norm_a = dp_norm;
-                
+
                 // Track sample for binning
                 for bin in bin_data.iter_mut() {
                     if chi >= bin.0 && chi < bin.1 {
@@ -129,13 +140,17 @@ fn main() {
                         break;
                     }
                 }
-                
+
                 // Scattering angle (Counted for A)
                 let cos_theta = dot(ev.pre_a.3, post_a.3) / (mag(ev.pre_a.3) * mag(post_a.3));
                 let theta = cos_theta.clamp(-1.0, 1.0).acos().to_degrees();
-                if theta < 30.0 { pass += 1; }
-                else if theta < 150.0 { defl += 1; }
-                else { back += 1; }
+                if theta < 30.0 {
+                    pass += 1;
+                } else if theta < 150.0 {
+                    defl += 1;
+                } else {
+                    back += 1;
+                }
             }
         }
 
@@ -143,7 +158,7 @@ fn main() {
         if let Some(post_b) = ev.post_b {
             let p_pre = ev.pre_b.2.abs();
             let p_post = post_b.2.abs();
-            
+
             if p_pre >= 0.01 {
                 let dp_norm = (p_post - p_pre).abs() / (p_pre + p_post + EPS);
                 dp_norm_b = dp_norm;
@@ -161,16 +176,24 @@ fn main() {
                 // Scattering angle (Counted for B)
                 let cos_theta = dot(ev.pre_b.3, post_b.3) / (mag(ev.pre_b.3) * mag(post_b.3));
                 let theta = cos_theta.clamp(-1.0, 1.0).acos().to_degrees();
-                if theta < 30.0 { pass += 1; }
-                else if theta < 150.0 { defl += 1; }
-                else { back += 1; }
+                if theta < 30.0 {
+                    pass += 1;
+                } else if theta < 150.0 {
+                    defl += 1;
+                } else {
+                    back += 1;
+                }
             }
         }
 
         // Symmetry η = |Δp_norm_a - Δp_norm_b| / (Δp_norm_a + Δp_norm_b + ε)
         if dp_norm_a >= 0.0 && dp_norm_b >= 0.0 {
             let eta = (dp_norm_a - dp_norm_b).abs() / (dp_norm_a + dp_norm_b + EPS);
-            if eta < 0.2 { sym += 1; } else { asym += 1; }
+            if eta < 0.2 {
+                sym += 1;
+            } else {
+                asym += 1;
+            }
         }
     }
 
@@ -183,7 +206,13 @@ fn main() {
     for bin in bin_data {
         let count = bin.3.len();
         if count == 0 {
-            chi_bins.push(ChiBin { range: bin.2, mean_dp_norm: 0.0, var_dp_norm: 0.0, mean_duration: 0.0, count: 0 });
+            chi_bins.push(ChiBin {
+                range: bin.2,
+                mean_dp_norm: 0.0,
+                var_dp_norm: 0.0,
+                mean_duration: 0.0,
+                count: 0,
+            });
             continue;
         }
         let mean_dp = bin.3.iter().sum::<f64>() / count as f64;
@@ -207,8 +236,16 @@ fn main() {
 
     let total_sym = (sym + asym) as f64;
     let symmetry_profile = SymmetryProfile {
-        symmetric: if total_sym > 0.0 { sym as f64 / total_sym * 100.0 } else { 0.0 },
-        asymmetric: if total_sym > 0.0 { asym as f64 / total_sym * 100.0 } else { 0.0 },
+        symmetric: if total_sym > 0.0 {
+            sym as f64 / total_sym * 100.0
+        } else {
+            0.0
+        },
+        asymmetric: if total_sym > 0.0 {
+            asym as f64 / total_sym * 100.0
+        } else {
+            0.0
+        },
     };
 
     let best_fit = if chi_bins[0].mean_dp_norm < 0.1 && chi_bins[4].mean_dp_norm > 0.3 {
@@ -221,17 +258,23 @@ fn main() {
     println!("| χ Bin | Samples | Mean Δp_norm | Mean Duration (τ) |");
     println!("|-------|---------|--------------|-------------------|");
     for bin in &chi_bins {
-        println!("| {} | {} | {:.4} | {:.1} |", bin.range, bin.count, bin.mean_dp_norm, bin.mean_duration);
+        println!(
+            "| {} | {} | {:.4} | {:.1} |",
+            bin.range, bin.count, bin.mean_dp_norm, bin.mean_duration
+        );
     }
 
     println!("\nScattering Distribution:");
     println!("  Pass-through (<30°): {:.1}%", scat_dist.pass_through);
     println!("  Deflection (30-150°): {:.1}%", scat_dist.deflection);
     println!("  Back-scatter (>150°): {:.1}%", scat_dist.back_scatter);
-    
+
     println!("\nSymmetry Profile:");
     println!("  Symmetric (η < 0.2):  {:.1}%", symmetry_profile.symmetric);
-    println!("  Asymmetric (η >= 0.2): {:.1}%", symmetry_profile.asymmetric);
+    println!(
+        "  Asymmetric (η >= 0.2): {:.1}%",
+        symmetry_profile.asymmetric
+    );
 
     println!("\nFit: {}", best_fit);
 
@@ -245,6 +288,10 @@ fn main() {
         best_fit_model: best_fit,
         interpretation: "Corrected physics extraction complete.".to_string(),
     };
-    fs::write("exports/force_law_summary_corrected.json", serde_json::to_string_pretty(&stats).unwrap()).unwrap();
+    fs::write(
+        "exports/force_law_summary_corrected.json",
+        serde_json::to_string_pretty(&stats).unwrap(),
+    )
+    .unwrap();
     println!("\nSTAGED: Ready for Final Phase Analysis.");
 }

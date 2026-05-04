@@ -108,17 +108,10 @@ hcsn-rust/
 │       ├── robustness_attack.rs    # Stress-tests particle identity
 │       └── robustness_pipeline.rs  # Full robustness validation sweep
 │
-├── scripts/                        # Analysis shell + Python scripts
-│   ├── build_phase_diagram.py
-│   ├── conservation_analyzer.py
-│   ├── conservation_audit_v2.py
-│   ├── emergence_audit_v4.py → v5_1.py   # Emergence audit pipeline versions
-│   ├── emergence_scaling_v5_2.py
-│   ├── energy_audit_v3.py
-│   ├── run_emergence_audit_v4.sh → v5_1.sh
-│   ├── run_emergence_scaling_v5_2.sh
-│   ├── run_hybrid_audit_v3.sh
-│   └── run_sweep_v2.sh
+├── scripts/                        # Unified Scripts Directory
+│   ├── pipeline/                   # Phase 1-5 active validation pipeline
+│   ├── legacy/audits/              # Old emergence audits
+│   └── legacy/exploratory/         # Old python data visualizations and scrapers
 │
 ├── hypotheses/
 │   └── emergence_log.md            # Detailed running log of all hypotheses tested
@@ -136,14 +129,7 @@ hcsn-rust/
 │   ├── pure_emergence_summary.json            # Pure mode results
 │   └── interaction_experiment.json            # Two-probe experiment data
 │
-├── run_production.py               # Orchestrates Seeds 4 & 5 (p=0.64, 60k steps)
-├── run_experiment_A.py             # Experiment A runner
-├── run_phase_2.py                  # Phase 2 experiment runner
-├── analyze_force_law.py            # Force law functional fit (Python)
-├── analyze_lifetimes.py            # Ensemble hazard rate & P(τ) analysis
-├── sweep_regimes.py                # Parameter regime sweep
-├── interaction_law_fitting.png     # Force law fit visualization
-└── scattering_angles.png           # Scattering angle distribution
+│
 ```
 
 ---
@@ -627,15 +613,13 @@ Sweeps multiple parameter regimes to map the phase space.
 
 ## 7. Analysis Scripts (scripts/)
 
-| Script | Purpose |
+The scripts are unified and safely separated:
+
+| Path | Purpose |
 |:---|:---|
-| `build_phase_diagram.py` | Builds a 2D phase diagram from swept parameters |
-| `conservation_analyzer.py` | Checks momentum/energy conservation in exported data |
-| `conservation_audit_v2.py` | Updated conservation audit |
-| `emergence_audit_v4/5/v5_1.py` | Full emergence pipeline: detects, classifies, and counts knots |
-| `emergence_scaling_v5_2.py` | Scaling analysis of emergent structures |
-| `energy_audit_v3.py` | Energy balance audit across interaction events |
-| Shell scripts (`.sh`) | Runner scripts for the Python analysis tools, configuring env vars |
+| `scripts/pipeline/` | The active v3.1 scientific validation suite (Bash orchestrators + Python analyzers). |
+| `scripts/legacy/audits/` | Historical `emergence_audit` scripts (v4, v5, etc). Do not use for current research. |
+| `scripts/legacy/exploratory/` | Old visualizations, random scrapers, and deprecated Python orchestrators. |
 
 ---
 

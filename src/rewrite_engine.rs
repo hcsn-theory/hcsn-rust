@@ -4,11 +4,10 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use rand::SeedableRng;
 use std::collections::{HashMap, HashSet};
-use std::time::Instant;
 
 use crate::hypergraph::Hypergraph;
 use crate::observables::{
-    component_radius, compute_coherence_raw, compute_omega, detect_candidate_knot_neighborhoods,
+    component_radius, compute_coherence_raw, detect_candidate_knot_neighborhoods,
     InteractionEvent, TopologicalKnot,
 };
 use crate::physics_params::PhysicsParams;
@@ -46,6 +45,7 @@ pub enum EmergenceMode {
 pub struct RewriteEngine {
     pub h: Hypergraph,
     pub p_create: f64,
+    pub p_fusion: f64,
     pub mode: EmergenceMode,
     pub pure_mode: bool,
 
@@ -81,8 +81,6 @@ pub struct RewriteEngine {
 
     // rewrite bookkeeping
     pub last_rewrite: Option<UndoRecord>,
-    pub cached_inter: Option<HashMap<u64, FixedBitSet>>,
-    pub interaction_counts: HashMap<(u64, u64), u16>,
     pub forced_time: Option<usize>,
     pub time: usize,
     pub verbose: bool,
@@ -92,14 +90,13 @@ pub struct RewriteEngine {
     pending_bridge: Option<(u64, u64)>,
     pending_bridge_time: Option<usize>,
 
-    last_step_time: f64,
     pub attempted_rewrites: usize,
     pub suppressed_rewrites: usize,
 
     // Per-vertex stability memory: accumulates for vertices in coherent structures
     pub stability: HashMap<u64, f64>,
 
-    pub coupled_vertices: HashSet<u64>,
+    pub coupling_intensity: HashMap<u64, f64>,
     pub active_interactions: HashMap<(u64, u64), InteractionEvent>,
 
     // Conservation Mode
@@ -111,23 +108,89 @@ pub struct RewriteEngine {
     pub thread_id: Option<usize>,
     pub max_steps: usize,
     pub rng: SmallRng,
+
+    // Performance Buffers
+    pub bfs_queue: std::collections::VecDeque<u64>,
+    pub track_interval: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct EngineConfig {
+    pub p_create: f64,
+    pub p_fusion: Option<f64>,
+    pub gamma_defect: Option<f64>,
+    pub inertia_scale: Option<f64>,
+    pub interaction_boost: Option<f64>,
+    pub stability_decay: Option<f64>,
+    pub nonlinear_coupling: Option<f64>,
+    pub memory_coupling: Option<f64>,
+    pub defect_injection: Option<f64>,
+    pub disable_patches: bool,
+    pub seed: Option<u64>,
+    pub track_interval: Option<usize>,
+}
+
+impl Default for EngineConfig {
+    fn default() -> Self {
+        Self {
+            p_create: 0.64,
+            p_fusion: None,
+            gamma_defect: None,
+            inertia_scale: None,
+            interaction_boost: None,
+            stability_decay: None,
+            nonlinear_coupling: None,
+            memory_coupling: None,
+            defect_injection: None,
+            disable_patches: false,
+            seed: None,
+            track_interval: None,
+        }
+    }
 }
 
 impl RewriteEngine {
+
+    pub fn update_topological_knots(&mut self) {
+        Self::process_knot_update_static(
+            &self.h,
+            &mut self.active_knots,
+            &mut self.dead_knots,
+            &mut self.next_knot_id,
+            &self.stability,
+            self.time,
+            1.2,
+            0.3,
+        );
+        self.perform_kinematics_and_interactions();
+    }
     pub fn new(h: Hypergraph, p_create: f64, seed: Option<u64>) -> Self {
+        Self::with_config(h, EngineConfig {
+            p_create,
+            seed,
+            ..Default::default()
+        })
+    }
+
+    pub fn with_config(h: Hypergraph, config: EngineConfig) -> Self {
+        println!("DEBUG: RewriteEngine::new start");
         // Initialize deterministic SmallRng from seed or random entropy
-        let rng = match seed {
+        let rng = match config.seed {
             Some(s) => SmallRng::seed_from_u64(s),
             None => SmallRng::from_entropy(),
         };
 
+        let mut physics_params = PhysicsParams::new();
+        physics_params.apply_overrides(&config);
+
         Self {
             h,
-            p_create,
+            p_create: config.p_create,
+            p_fusion: config.p_fusion.unwrap_or(0.10), // Reverted default to stable 10%
             gamma_time: 0.1,
             gamma_ext: 0.05,
             epsilon_label_violation: 0.08,
-            params: PhysicsParams::new(),
+            params: physics_params,
             mode: EmergenceMode::Assisted, // Default to v5.1 Honest Assisted
 
             xi: HashMap::new(),
@@ -151,22 +214,19 @@ impl RewriteEngine {
             defect_log: Vec::new(),
 
             last_rewrite: None,
-            interaction_counts: HashMap::new(),
             forced_time: None,
             time: 0,
             verbose: true,
             print_interval: 50,
 
-            cached_inter: None,
             pending_bridge: None,
             pending_bridge_time: None,
 
-            last_step_time: 0.0,
             attempted_rewrites: 0,
             suppressed_rewrites: 0,
             stability: HashMap::new(),
-            coupled_vertices: HashSet::new(),
             active_interactions: HashMap::new(),
+            coupling_intensity: HashMap::new(),
             pure_mode: false,
 
             conservation_mode: ConservationMode::Baseline,
@@ -175,6 +235,8 @@ impl RewriteEngine {
             thread_id: None,
             max_steps: 0,
             rng,
+            bfs_queue: std::collections::VecDeque::new(),
+            track_interval: config.track_interval.unwrap_or(10),
         }
     }
 
@@ -184,392 +246,47 @@ impl RewriteEngine {
     pub fn step(&mut self) -> bool {
         self.time += 1;
 
-        // Perform periodic memory scrub (safeguard against ghost bit expansion)
-        if self.time % 100 == 0 {
-            self.h.scrub_ghost_bits();
-
-            // Status heartbeat print reduced to 1000 to keep console clean
-            if self.time % 1000 == 0 {
-                let tid = self.thread_id.unwrap_or(0);
-                if self.max_steps > 0 {
-                    println!("Thread {}: Step {}/{}", tid, self.time, self.max_steps);
-                } else {
-                    println!("Thread {}: Step {}...", tid, self.time);
-                }
-            }
+        if self.time % 1000 == 0 {
+            let tid = self.thread_id.unwrap_or(0);
+            println!("Thread {}: Step {}...", tid, self.time);
         }
 
-        let t0 = Instant::now();
         self.prev_xi = self.xi.clone();
 
-        // --- HYPER-FLOW BOOTSTRAP (Step 1 only) ---
-        if self.cached_inter.is_none() {
-            let inter = crate::observables::worldline_interaction_graph(&self.h, 0.1);
-            self.cached_inter = Some(inter);
-
-            // Populate reference counts for the initial state
-            for edge in self.h.hyperedges.values() {
-                let wl_ids: Vec<u64> = edge
-                    .vertices
-                    .iter()
-                    .filter(|&&id| {
-                        self.h.vertices.get(&id).map_or(false, |v| {
-                            v.depth >= (0.1 * self.h.max_chain_length() as f64) as usize
-                        })
-                    })
-                    .copied()
-                    .collect();
-                for &i in &wl_ids {
-                    for &j in &wl_ids {
-                        if i < j {
-                            *self.interaction_counts.entry((i, j)).or_insert(0) += 1;
-                        }
-                    }
-                }
-            }
-        }
-        let mut inter = self.cached_inter.take().unwrap();
-
-        // --- Hypothesis E: Interaction Time Symmetry (Stochastic Undo) ---
-        if self.params.enable_conservation_patches
-            && self.conservation_mode == ConservationMode::TimeSymmetry
-        {
-            let rng = &mut self.rng;
-
-            // Check for high local momentum error threshold (0.5)
-            let mut high_error = false;
-            for knot in self.active_knots.values() {
-                let p_before = knot.prev_momentum;
-                let p_after = knot.momentum;
-                let eps_p = (p_after - p_before).abs() / (p_before.abs() + 1e-6);
-                if eps_p > 0.5 {
-                    high_error = true;
-                    break;
-                }
+        let undo_opt = self.propose_rewrite();
+        if let Some(ref undo) = undo_opt {
+            self.last_rewrite = Some(undo.clone());
+            
+            // SCRUBBING: Remove deleted vertex from auxiliary maps
+            if let Some(ref v_removed) = undo.removed_vertex {
+                let vid = v_removed.id;
+                self.stability.remove(&vid);
+                self.xi.remove(&vid);
+                self.prev_xi.remove(&vid);
+                self.coupling_intensity.remove(&vid);
+                self.momentum_reservoir.remove(&vid);
             }
 
-            // p_undo = 0.2 if high error exists
-            let p_undo = if high_error { 0.2 } else { 0.05 };
-
-            if rng.gen::<f64>() < p_undo {
-                if let Some(record) = self.rewrite_history.pop() {
-                    // Incremental Undo
-                    self.cached_inter = Some(inter);
-                    self.undo_changes(record.clone());
-                    self.update_interaction_graph_delta(&record, false);
-                    inter = self.cached_inter.take().unwrap();
-
-                    // Even on backstep, we update internal states to maintain physical continuity
-                    self.update_topological_knots(&inter);
-                    self.update_stability(&inter);
-                    self.perform_kinematics_and_interactions(&inter);
-                    self.cached_inter = Some(inter);
-                    return true;
-                }
+            self.rewrite_history.push(undo.clone());
+            if self.rewrite_history.len() > 2 {
+                self.rewrite_history.drain(0..self.rewrite_history.len() - 2);
             }
         }
 
-        // Experiment C: Spontaneous Vacuum Nucleation (Bypassed in Pure Mode)
-        if !self.pure_mode && self.params.defect_injection > 0.0 {
-            let rng = &mut self.rng;
-            if rng.gen::<f64>() < self.params.defect_injection {
-                let v1 = self.h.add_vertex();
-                let v2 = self.h.add_vertex();
-                let v3 = self.h.add_vertex();
-                let v4 = self.h.add_vertex();
+        if self.track_interval > 0 && self.time % self.track_interval == 0 {
+            self.update_topological_knots();
+        }
+        self.update_stability();
+        self.record_xi_current();
 
-                let nodes = vec![v1.id, v2.id, v3.id, v4.id];
-                for i in 0..4 {
-                    for j in i + 1..4 {
-                        self.h.add_causal_relation(nodes[i], nodes[j]);
-                        self.h.add_hyperedge(vec![nodes[i], nodes[j]]);
-                    }
-                }
-            }
+        if self.xi_current_log.len() > 100 {
+            self.xi_current_log.drain(0..self.xi_current_log.len() - 100);
         }
 
-        // ---------------------------------
-        // Propose rewrite
-        // ---------------------------------
-        let undo_opt = self.propose_rewrite(&inter);
-        if undo_opt.is_none() && self.time % 200 == 0 {
-            if self.verbose {
-                println!("[debug] rewrite skipped at t = {}", self.time);
-            }
-        }
-
-        let undo = match undo_opt {
-            Some(u) => u,
-            None => {
-                self.cached_inter = Some(inter);
-                return false;
-            }
-        };
-
-        // Cache last rewrite internally
-        let undo_clone = undo.clone();
-        self.rewrite_history.push(undo_clone.clone());
-        if self.rewrite_history.len() > 200 {
-            self.rewrite_history
-                .drain(0..self.rewrite_history.len() - 200);
-        }
-
-        self.last_rewrite = Some(undo_clone);
-
-        // ---------------------------------
-        // Acceptance rule
-        // ---------------------------------
-        let accept_prob = 1.0;
-
-        let rng = &mut self.rng;
-        let accepted = rng.gen::<f64>() <= accept_prob;
-
-        if !accepted {
-            self.undo_changes(undo.clone());
-            // Incremental Undo
-            self.cached_inter = Some(inter);
-            self.update_interaction_graph_delta(&undo, false);
-            inter = self.cached_inter.take().unwrap();
-        } else {
-            // Incremental Apply
-            self.cached_inter = Some(inter);
-            self.update_interaction_graph_delta(&undo, true);
-            inter = self.cached_inter.take().unwrap();
-
-            // -----------------------------
-            // ξ inheritance & propagation (Bypassed in Pure Mode)
-            // -----------------------------
-            if !self.pure_mode {
-                let touched = self.touched_vertices();
-                let mut parents = Vec::new();
-                for p in &touched {
-                    if let Some(&val) = self.xi.get(p) {
-                        if val > self.xi_threshold {
-                            parents.push(*p);
-                        }
-                    }
-                }
-
-                if let Some(lr) = &self.last_rewrite {
-                    for &vid in &lr.added_vertices {
-                        if !parents.is_empty() {
-                            let mut sum_xi = 0.0;
-                            for &p in &parents {
-                                sum_xi += self.xi.get(&p).unwrap_or(&0.0);
-                            }
-                            let inherited = sum_xi / parents.len() as f64;
-                            *self.xi.entry(vid).or_insert(0.0) += 0.5 * inherited;
-                        }
-                    }
-                }
-
-                let xi_clusters = self.xi_clusters(&inter);
-                self.propagate_xi(&inter, &xi_clusters);
-            }
-
-            // --------------------------------------------------
-            // Deferred causal bridge
-            // --------------------------------------------------
-            if let (Some((u, v)), Some(pt)) = (self.pending_bridge, self.pending_bridge_time) {
-                if self.time.saturating_sub(pt) >= 20 {
-                    if self.h.vertices.contains_key(&u) && self.h.vertices.contains_key(&v) {
-                        self.h.add_causal_relation(u, v);
-                    }
-                    self.pending_bridge = None;
-                    self.pending_bridge_time = None;
-                }
-            }
-
-            // -----------------------------
-            // Geometry updates
-            // -----------------------------
-            if self.time % self.geometry_stride == 0 {
-                let xi_support: HashSet<u64> = self
-                    .xi
-                    .iter()
-                    .filter(|(&_v, &x)| x > self.xi_threshold && x.is_finite())
-                    .map(|(v, _)| *v)
-                    .collect();
-
-                if xi_support.len() >= 2 {
-                    // Update topo (v5.6.0 uses inter)
-                    self.update_topo_distance_memory(&inter, &xi_support);
-                    // Update xi
-                    self.update_xi_distance_memory(&inter);
-                }
-            }
-
-            self.record_xi_current(&inter);
-
-            self.update_topological_knots(&inter);
-            self.update_stability(&inter);
-            self.perform_kinematics_and_interactions(&inter);
-        }
-
-        // Timing + diagnostics
-        self.last_step_time = t0.elapsed().as_secs_f64();
-
-        if self.time % 200 == 0 {
-            if self.verbose {
-                println!("[debug] max causal depth = {}", self.h.max_chain_length());
-            }
-        }
-
-        if self.verbose && self.time % self.print_interval == 0 {
-            // A particle must persist for at least 50 steps and remain dimensionally bounded (radius < 5.0)
-            let valid_knots = self
-                .active_knots
-                .values()
-                .filter(|k| k.age >= 50 && k.radius < 5.0)
-                .count();
-            let geom_pairs = self.topo_distance_memory.len() + self.xi_distance_memory.len();
-
-            let supp_ratio = if self.attempted_rewrites > 0 {
-                self.suppressed_rewrites as f64 / self.attempted_rewrites as f64
-            } else {
-                0.0
-            };
-
-            // IMPORTANT:
-            // Ω (hierarchical closure) is a derived observable computed from the
-            // instantaneous interaction graph. It does NOT influence rewrite dynamics
-            // and has no causal propagation. It is used only for diagnostics.
-            let omega = compute_omega(&inter);
-
-            println!(
-                "[engine] t={} step={:.2}ms Ω={:.6} knots={} geom_pairs={} supp_ratio={:.3}",
-                self.time,
-                self.last_step_time * 1000.0,
-                omega,
-                valid_knots,
-                geom_pairs,
-                supp_ratio
-            );
-
-            // reset stats for window
-            self.attempted_rewrites = 0;
-            self.suppressed_rewrites = 0;
-        }
-
-        self.cached_inter = Some(inter);
-        accepted
+        undo_opt.is_some()
     }
-    pub fn update_interaction_graph_delta(&mut self, record: &UndoRecord, applying: bool) {
-        let fraction = 0.1;
-        let h = &self.h;
-        let max_depth = h.max_chain_length() as f64;
-        let cutoff = (fraction * max_depth) as usize;
-
-        let inter_map = self.cached_inter.get_or_insert_with(HashMap::new);
-        let max_id = h.vertices.keys().max().unwrap_or(&0);
-        let cap = (*max_id as usize + 1).max(1024);
-
-        let mut process_edge = |v_ids: &[u64], weight: i32| {
-            let wl_ids: Vec<u64> = v_ids
-                .iter()
-                .filter(|&&id| h.vertices.get(&id).map_or(false, |v| v.depth >= cutoff))
-                .copied()
-                .collect();
-
-            for &i in &wl_ids {
-                for &j in &wl_ids {
-                    if i == j {
-                        continue;
-                    }
-                    let pair = if i < j { (i, j) } else { (j, i) };
-                    let count = self.interaction_counts.entry(pair).or_insert(0);
-
-                    if weight > 0 {
-                        if *count == 0 {
-                            let needed = (i as usize).max(j as usize) + 1;
-
-                            let bs_i = inter_map
-                                .entry(i)
-                                .or_insert_with(|| FixedBitSet::with_capacity(cap));
-                            if needed > bs_i.len() {
-                                bs_i.grow(needed);
-                            }
-                            bs_i.insert(i as usize);
-                            bs_i.insert(j as usize);
-
-                            let bs_j = inter_map
-                                .entry(j)
-                                .or_insert_with(|| FixedBitSet::with_capacity(cap));
-                            if needed > bs_j.len() {
-                                bs_j.grow(needed);
-                            }
-                            bs_j.insert(j as usize);
-                            bs_j.insert(i as usize);
-                        }
-                        *count += 1;
-                    } else {
-                        if *count > 0 {
-                            *count -= 1;
-                            if *count == 0 {
-                                if let Some(bs) = inter_map.get_mut(&i) {
-                                    if (j as usize) < bs.len() {
-                                        bs.set(j as usize, false);
-                                    }
-                                }
-                                if let Some(bs) = inter_map.get_mut(&j) {
-                                    if (i as usize) < bs.len() {
-                                        bs.set(i as usize, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        if applying {
-            // Add added_edges
-            for &eid in &record.added_edges {
-                if let Some(edge) = h.hyperedges.get(&eid) {
-                    process_edge(&edge.vertices, 1);
-                }
-            }
-            // Remove removed_edges
-            for edge in record.removed_edges.values() {
-                process_edge(&edge.vertices, -1);
-            }
-        } else {
-            // Undo: Remove added
-            for &eid in &record.added_edges {
-                // Accessing h here might be tricky if it's already removed,
-                // but UndoRecord usually happens right after.
-                if let Some(edge) = h.hyperedges.get(&eid) {
-                    process_edge(&edge.vertices, -1);
-                }
-            }
-            // Undo: Add removed
-            for edge in record.removed_edges.values() {
-                process_edge(&edge.vertices, 1);
-            }
-        }
-    }
-
-    pub fn update_topological_knots(&mut self, inter: &HashMap<u64, FixedBitSet>) {
-        Self::process_knot_update_static(
-            &self.h,
-            inter,
-            &mut self.active_knots,
-            &mut self.dead_knots,
-            &mut self.next_knot_id,
-            &self.stability,
-            self.time,
-            1.2, // Default coherence threshold
-            0.3, // Default tracking overlap threshold
-        );
-
-        // Post-tracking kinematics (still depends on engine state for interactions)
-        self.perform_kinematics_and_interactions(inter);
-    }
-
     pub fn process_knot_update_static(
         h: &Hypergraph,
-        inter: &HashMap<u64, FixedBitSet>,
         active_knots: &mut HashMap<u64, TopologicalKnot>,
         dead_knots: &mut Vec<TopologicalKnot>,
         next_knot_id: &mut u64,
@@ -578,7 +295,7 @@ impl RewriteEngine {
         min_coherence: f64,
         overlap_threshold: f64,
     ) {
-        let candidates = detect_candidate_knot_neighborhoods(h, inter, min_coherence);
+        let candidates = detect_candidate_knot_neighborhoods(h, min_coherence);
         let mut next_active_knots = HashMap::new();
 
         // Step 1: Update existing knots
@@ -605,7 +322,7 @@ impl RewriteEngine {
             if let Some(idx) = best_idx {
                 matched_candidates.insert(idx);
                 let cand = &candidates[idx];
-                let (ie, be) = compute_coherence_raw(cand, inter);
+                let (ie, be) = compute_coherence_raw(cand, h);
                 let coherence = if be > 0 {
                     ie as f64 / be as f64
                 } else if ie > 0 {
@@ -617,7 +334,7 @@ impl RewriteEngine {
                 let mut updated_knot = knot.clone();
                 updated_knot.vertices = cand.clone();
                 updated_knot.age += 10;
-                updated_knot.radius = component_radius(cand, inter);
+                updated_knot.radius = component_radius(cand, h);
                 updated_knot.coherence = coherence;
                 if cand.len() > updated_knot.max_size {
                     updated_knot.max_size = cand.len();
@@ -626,18 +343,15 @@ impl RewriteEngine {
                     updated_knot.min_size = cand.len();
                 }
 
-                // Normalize position by max vertex ID so the proxy stays in (0, 1].
-                // Without this, monotonically-growing IDs cause unbounded velocity → Inf → NaN
-                // which silently poisons all conservation-mode corrections (Hyp A/C/D/E).
-                let max_id = h.vertices.keys().max().cloned().unwrap_or(1) as f64;
+                let max_id = h.max_vertex_id() as f64;
                 let mean_pos =
-                    cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id);
+                    cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id.max(1.0));
                 let prev_pos = knot
                     .position_history
                     .last()
                     .map(|(_, p, _)| *p)
                     .unwrap_or(mean_pos);
-                updated_knot.velocity = (mean_pos - prev_pos).abs() / 10.0;
+                updated_knot.diagnostic_v_abs = (mean_pos - prev_pos).abs() / 10.0;
 
                 updated_knot
                     .position_history
@@ -665,7 +379,7 @@ impl RewriteEngine {
                 continue;
             }
 
-            let (ie, be) = compute_coherence_raw(cand, inter);
+            let (ie, be) = compute_coherence_raw(cand, h);
             let coherence = if be > 0 {
                 ie as f64 / be as f64
             } else if ie > 0 {
@@ -676,19 +390,18 @@ impl RewriteEngine {
 
             // Only spawn if it meets structural criteria
             if coherence > min_coherence {
-                let max_id = h.vertices.keys().max().cloned().unwrap_or(1) as f64;
+                let max_id = h.max_vertex_id() as f64;
                 let mean_pos =
-                    cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id);
+                    cand.iter().map(|&v| v as f64).sum::<f64>() / (cand.len() as f64 * max_id.max(1.0));
                 let new_knot = TopologicalKnot {
                     id: *next_knot_id,
                     vertices: cand.clone(),
                     age: 10,
-                    radius: component_radius(cand, inter),
+                    radius: component_radius(cand, h),
                     max_size: cand.len(),
                     min_size: cand.len(),
                     coherence,
-                    velocity: 0.0,
-                    velocity_avg: (0.0, 0.0),
+                    diagnostic_v_abs: 0.0,
                     mass: cand.len() as f64 * coherence.powi(2),
                     momentum: 0.0,
                     energy: 0.0,
@@ -704,9 +417,9 @@ impl RewriteEngine {
         *active_knots = next_active_knots;
     }
 
-    fn perform_kinematics_and_interactions(&mut self, _inter: &HashMap<u64, FixedBitSet>) {
+    fn perform_kinematics_and_interactions(&mut self) {
         // Step 3: Formal Kinematics
-        self.coupled_vertices.clear();
+        self.coupling_intensity.clear();
         let active_ids: Vec<_> = self.active_knots.keys().copied().collect();
         for &id in &active_ids {
             let knot = self.active_knots.get_mut(&id).unwrap();
@@ -749,10 +462,10 @@ impl RewriteEngine {
                     // Clamp to ±10.0 as a generous safety ceiling.
                     dv = dv.clamp(-10.0, 10.0);
 
-                    knot.velocity_avg = (dv, 0.0);
+                    knot.diagnostic_v_abs = dv;
                 }
             }
-            knot.momentum = knot.mass * knot.velocity_avg.0;
+            knot.momentum = knot.mass * knot.diagnostic_v_abs;
 
             // Energy Definition: E = 0.5 * M * v^2 + lambda * stability
             let stab_sum = knot
@@ -765,7 +478,7 @@ impl RewriteEngine {
             } else {
                 0.0
             };
-            knot.energy = 0.5 * knot.mass * knot.velocity_avg.0.powi(2) + 0.02 * mean_stability;
+            knot.energy = 0.5 * knot.mass * knot.diagnostic_v_abs.powi(2) + 0.02 * mean_stability;
         }
 
         // --- Hypothesis D: Mass Coupling (Soft Newtonian) ---
@@ -776,8 +489,8 @@ impl RewriteEngine {
                 let p_before = knot.prev_momentum;
                 let p_after = knot.momentum;
                 let correction = (p_before - p_after) * 0.3; // 30% soft constraint
-                knot.velocity_avg.0 += correction / (knot.mass + 1e-6);
-                knot.momentum = knot.mass * knot.velocity_avg.0;
+                knot.diagnostic_v_abs += correction / (knot.mass + 1e-6);
+                knot.momentum = knot.mass * knot.diagnostic_v_abs;
             }
         }
 
@@ -803,7 +516,7 @@ impl RewriteEngine {
                 for &v in &knot.vertices {
                     if let Some(res) = self.momentum_reservoir.get_mut(&v) {
                         let siphon = *res * 0.15;
-                        knot.velocity_avg.0 += siphon / (knot.mass + 1e-6);
+                        knot.diagnostic_v_abs += siphon / (knot.mass + 1e-6);
                         *res -= siphon;
                     }
                 }
@@ -817,53 +530,60 @@ impl RewriteEngine {
             // --- Causal Redistribution (v5.0 Phase Transition Support) ---
             // Distribute momentum from vertices that are NO LONGER in the graph
             // into their 1-hop causal neighborhood.
-            let mut diffusions = Vec::new();
             let mut orphans = Vec::new();
-            for (&v, &mom) in &self.momentum_reservoir {
+            for (&v, _) in &self.momentum_reservoir {
                 if !self.h.vertices.contains_key(&v) {
                     orphans.push(v);
-                    if let Some(neighbors) = _inter.get(&v) {
-                        let n_deg = neighbors.len() as f64;
-                        if n_deg > 0.0 {
-                            let share = mom / n_deg;
-                            for nbr_idx in neighbors.ones() {
-                                let nbr = nbr_idx as u64;
-                                diffusions.push((nbr, share));
-                            }
-                        }
-                    }
                 }
             }
 
             for v in orphans {
                 self.momentum_reservoir.remove(&v);
             }
-            for (v, share) in diffusions {
-                *self.momentum_reservoir.entry(v).or_insert(0.0) += share;
+        }
+        // Pre-compute halos for all knots using properly-sized transient bitsets
+        let mut active_ids: Vec<u64> = self.active_knots.keys().copied().collect();
+        active_ids.sort();
+
+        let max_id = self.h.max_vertex_id() as usize + 1;
+        let mut halos = Vec::with_capacity(active_ids.len());
+        let mut knot_halos = HashMap::new();
+
+        for (i, &id) in active_ids.iter().enumerate() {
+            if let Some(knot) = self.active_knots.get(&id) {
+                let mut halo = FixedBitSet::with_capacity(max_id);
+                Self::compute_halo_inplace_static(&knot.vertices, &self.h, &mut halo);
+                halos.push(halo);
+                knot_halos.insert(id, i);
             }
         }
 
-        // Detect overlaps and manage persistent InteractionEvents
         let mut current_overlaps = HashSet::new();
         for i in 0..active_ids.len() {
             for j in i + 1..active_ids.len() {
                 let id_a = active_ids[i];
                 let id_b = active_ids[j];
-                let knot_a = &self.active_knots[&id_a];
-                let knot_b = &self.active_knots[&id_b];
+                let halo_a = &halos[i];
+                let halo_b = &halos[j];
 
-                let intersection = knot_a.vertices.intersection(&knot_b.vertices).count();
-                if intersection > 0 {
-                    let pair = if id_a < id_b {
-                        (id_a, id_b)
-                    } else {
-                        (id_b, id_a)
-                    };
-                    let chi = intersection as f64
-                        / (knot_a.vertices.len().min(knot_b.vertices.len()) as f64);
+                // Relational chi based on expanded Interaction Horizons (Halo)
+                // O(V/64) intersection count using block-wise comparison (no allocation)
+                let intersection_count = halo_a.as_slice().iter()
+                    .zip(halo_b.as_slice().iter())
+                    .map(|(a, b)| (a & b).count_ones())
+                    .sum::<u32>() as usize;
+
+                if intersection_count > 0 {
+                    let knot_a = &self.active_knots[&id_a];
+                    let knot_b = &self.active_knots[&id_b];
+                    
+                    let pair = if id_a < id_b { (id_a, id_b) } else { (id_b, id_a) };
+                    
+                    let chi_rel = intersection_count as f64 
+                        / (halo_a.ones().count().min(halo_b.ones().count()) as f64).max(1.0);
 
                     // Noise filter for active engagement
-                    if chi > 0.015 {
+                    if chi_rel > 0.015 {
                         current_overlaps.insert(pair);
 
                         if !self.active_interactions.contains_key(&pair) {
@@ -885,9 +605,9 @@ impl RewriteEngine {
                                 .sum::<f64>()
                                 / knot_b.vertices.len() as f64;
 
-                            let (int_a, bnd_a) = compute_coherence_raw(&knot_a.vertices, _inter);
+                            let (int_a, bnd_a) = compute_coherence_raw(&knot_a.vertices, &self.h);
                             let ratio_a = int_a as f64 / (int_a + bnd_a).max(1) as f64;
-                            let (int_b, bnd_b) = compute_coherence_raw(&knot_b.vertices, _inter);
+                            let (int_b, bnd_b) = compute_coherence_raw(&knot_b.vertices, &self.h);
                             let ratio_b = int_b as f64 / (int_b + bnd_b).max(1) as f64;
 
                             self.active_interactions.insert(
@@ -898,14 +618,17 @@ impl RewriteEngine {
                                     duration: 0,
                                     knot_a: id_a,
                                     knot_b: id_b,
-                                    overlap_size: intersection,
-                                    overlap_depth: chi,
+                                    overlap_size: intersection_count,
+                                    overlap_depth: chi_rel,
                                     resonance: res,
+                                    initial_chi: chi_rel,
+                                    prev_chi: chi_rel,
+                                    v_rel_smoothed: 0.0,
                                     pre_a: (
                                         m_a,
-                                        knot_a.velocity,
-                                        m_a * knot_a.velocity_avg.0,
-                                        knot_a.velocity_avg,
+                                        0.0,
+                                        0.0,
+                                        knot_a.diagnostic_v_abs,
                                         knot_a.coherence,
                                         stab_a,
                                         knot_a.radius,
@@ -916,9 +639,9 @@ impl RewriteEngine {
                                     ),
                                     pre_b: (
                                         m_b,
-                                        knot_b.velocity,
-                                        m_b * knot_b.velocity_avg.0,
-                                        knot_b.velocity_avg,
+                                        0.0,
+                                        0.0,
+                                        knot_b.diagnostic_v_abs,
                                         knot_b.coherence,
                                         stab_b,
                                         knot_b.radius,
@@ -933,21 +656,33 @@ impl RewriteEngine {
                                 },
                             );
                         } else {
-                            // Update max chi seen during interaction
+                            // Update relational kinematics with EMA smoothing to filter rewrite jitter
                             let event = self.active_interactions.get_mut(&pair).unwrap();
-                            if chi > event.overlap_depth {
-                                event.overlap_depth = chi;
+                            
+                            let raw_v_rel = (chi_rel - event.prev_chi) / 10.0;
+                            // Alpha = 0.2 provides low-pass filter against stochastic rewrite noise
+                            event.v_rel_smoothed = (0.2 * raw_v_rel) + (0.8 * event.v_rel_smoothed);
+                            
+                            if chi_rel > event.overlap_depth {
+                                event.overlap_depth = chi_rel;
                             }
+                            event.prev_chi = chi_rel;
                             event.steps_below_threshold = 0;
                         }
                     }
 
-                    if chi > 0.4 {
-                        for &v in &knot_a.vertices {
-                            self.coupled_vertices.insert(v);
+                    if chi_rel > 0.05 {
+                        let intensity = (chi_rel / 0.4).min(1.0);
+                        // Apply relief to the entire HALO union (the interaction field)
+                        for v_idx in halo_a.ones() {
+                            let v = v_idx as u64;
+                            let entry = self.coupling_intensity.entry(v).or_insert(0.0);
+                            if intensity > *entry { *entry = intensity; }
                         }
-                        for &v in &knot_b.vertices {
-                            self.coupled_vertices.insert(v);
+                        for v_idx in halo_b.ones() {
+                            let v = v_idx as u64;
+                            let entry = self.coupling_intensity.entry(v).or_insert(0.0);
+                            if intensity > *entry { *entry = intensity; }
                         }
                     }
                 }
@@ -990,12 +725,12 @@ impl RewriteEngine {
 
             for (id_a, id_b, corr) in corrections {
                 if let Some(ka) = self.active_knots.get_mut(&id_a) {
-                    ka.velocity_avg.0 += corr / (ka.mass + 1e-6);
-                    ka.momentum = ka.mass * ka.velocity_avg.0;
+                    ka.diagnostic_v_abs += corr / (ka.mass + 1e-6);
+                    ka.momentum = ka.mass * ka.diagnostic_v_abs;
                 }
                 if let Some(kb) = self.active_knots.get_mut(&id_b) {
-                    kb.velocity_avg.0 += corr / (kb.mass + 1e-6);
-                    kb.momentum = kb.mass * kb.velocity_avg.0;
+                    kb.diagnostic_v_abs += corr / (kb.mass + 1e-6);
+                    kb.momentum = kb.mass * kb.diagnostic_v_abs;
                 }
             }
         }
@@ -1025,13 +760,13 @@ impl RewriteEngine {
                     .map(|&v| self.stability.get(&v).unwrap_or(&0.0))
                     .sum::<f64>()
                     / ka.vertices.len() as f64;
-                let (int, bnd) = compute_coherence_raw(&ka.vertices, _inter);
+                let (int, bnd) = compute_coherence_raw(&ka.vertices, &self.h);
                 let ratio = int as f64 / (int + bnd).max(1) as f64;
                 event.post_a = Some((
                     ka.mass,
-                    ka.velocity,
-                    ka.mass * ka.velocity_avg.0,
-                    ka.velocity_avg,
+                    event.v_rel_smoothed,
+                    ka.mass * event.v_rel_smoothed,
+                    ka.diagnostic_v_abs,
                     ka.coherence,
                     stab,
                     ka.radius,
@@ -1048,13 +783,13 @@ impl RewriteEngine {
                     .map(|&v| self.stability.get(&v).unwrap_or(&0.0))
                     .sum::<f64>()
                     / kb.vertices.len() as f64;
-                let (int, bnd) = compute_coherence_raw(&kb.vertices, _inter);
+                let (int, bnd) = compute_coherence_raw(&kb.vertices, &self.h);
                 let ratio = int as f64 / (int + bnd).max(1) as f64;
                 event.post_b = Some((
                     kb.mass,
-                    kb.velocity,
-                    kb.mass * kb.velocity_avg.0,
-                    kb.velocity_avg,
+                    event.v_rel_smoothed,
+                    kb.mass * event.v_rel_smoothed,
+                    kb.diagnostic_v_abs,
                     kb.coherence,
                     stab,
                     kb.radius,
@@ -1069,10 +804,31 @@ impl RewriteEngine {
         }
     }
 
+    /// Computes the 1-hop structural halo for a knot using bitwise OR.
+    /// This creates the "Interaction Horizon" needed for Relational Kinematics.
+    fn compute_halo_inplace_static(vertices: &HashSet<u64>, h: &Hypergraph, halo: &mut FixedBitSet) {
+        halo.clear();
+        for &v in vertices {
+            let idx = v as usize;
+            if idx >= halo.len() {
+                halo.grow(idx + 1);
+            }
+            halo.insert(idx);
+            let neighbors = h.structural_neighbors(v);
+            for n_id in neighbors {
+                let n_idx = n_id as usize;
+                if n_idx >= halo.len() {
+                    halo.grow(n_idx + 1);
+                }
+                halo.insert(n_idx);
+            }
+        }
+    }
+
     /// Update per-vertex stability memory.
     /// Vertices inside active knots accumulate stability.
     /// All stability values decay slowly each cycle.
-    fn update_stability(&mut self, _inter: &HashMap<u64, FixedBitSet>) {
+    fn update_stability(&mut self) {
         // (1) Stability Decay (nu)
         let stability_decay = self.params.stability_decay;
 
@@ -1106,21 +862,31 @@ impl RewriteEngine {
     // --------------------------------------------------
     // Rewrite proposal
     // --------------------------------------------------
-    fn propose_rewrite(&mut self, inter: &HashMap<u64, FixedBitSet>) -> Option<UndoRecord> {
+    fn propose_rewrite(&mut self) -> Option<UndoRecord> {
         let rng = &mut self.rng;
 
         self.attempted_rewrites += 1;
 
-        let vertices: Vec<u64> = self.h.vertices.keys().copied().collect();
-        if vertices.is_empty() {
+        if self.h.vertices.is_empty() {
             return None;
         }
-        let anchor_v = *vertices.choose(rng).unwrap();
+
+        // --- Rejection Sampling (True O(1) Amortized) ---
+        // Instead of collecting keys into a Vec (O(V)), we guess a random ID 
+        // in the current range and check for existence. Since HCSN graphs are 
+        // relatively dense, this hits almost instantly with zero allocation.
+        let max_id = self.h.max_vertex_id();
+        let anchor_v = loop {
+            let guess = rng.gen_range(0..max_id);
+            if self.h.vertices.contains_key(&guess) {
+                break guess;
+            }
+        };
 
         // --- Pure Mode Bypass ---
         if self.pure_mode {
-            // Uniformly pick between edge creation (p_create) and vertex fusion
-            if rng.gen::<f64>() < 0.9 {
+            let total_p = self.p_create + self.p_fusion;
+            if rng.gen::<f64>() * total_p < self.p_create {
                 return crate::rules::edge_creation_rule(
                     &mut self.h,
                     Some(anchor_v),
@@ -1131,41 +897,31 @@ impl RewriteEngine {
             }
         }
 
-        // --- Density metric ---
-        let clustering = crate::observables::local_clustering(inter, anchor_v);
-        let degree = inter.get(&anchor_v).map(|n| n.len()).unwrap_or(0) as f64;
-
-        let total_degree: usize = inter.values().map(|n| n.len()).sum();
-        let avg_degree = if inter.is_empty() {
+        // --- Phase 1: Fast Density Suppression (O(1)) ---
+        let clustering = crate::observables::local_clustering(&self.h, anchor_v);
+        let degree = self.h.structural_neighbors(anchor_v).len() as f64;
+        let avg_degree = if self.h.vertices.is_empty() {
             1.0
         } else {
-            (total_degree as f64) / (inter.len() as f64)
-        }
-        .max(1.0);
+            (self.h.total_interactions as f64 * 2.0) / (self.h.vertices.len() as f64)
+        }.max(1.0);
 
         let local_density = clustering * (degree / avg_degree);
-
-        // --- (1) Unified suppression: density + coherence-dependent survival ---
-        // Base suppression from density, enhanced by structural coherence for formed structures.
-        // alpha_eff = alpha_base + lambda * max(0, coherence - threshold)
-        // This makes high-coherence neighborhoods progressively harder to destroy
-        // without a separate blocking gate that compounds to freeze everything.
-
-        // Compute coherence first (needed for suppression + growth)
-        let mut internal_edges: u32 = 0;
-        let mut boundary_edges: u32 = 0;
-
-        if let Some(neighbors) = inter.get(&anchor_v) {
-            let mut neighborhood = HashSet::new();
-            for nbr_idx in neighbors.ones() {
-                neighborhood.insert(nbr_idx as u64);
-            }
-            neighborhood.insert(anchor_v);
-
-            let (ie, be) = crate::observables::compute_coherence_raw(&neighborhood, inter);
-            internal_edges = ie;
-            boundary_edges = be;
+        
+        // Use alpha_base as a fast filter before expensive coherence checks
+        let alpha_base = 1.5;
+        let rewrite_prob_fast = (-(alpha_base * local_density)).exp();
+        
+        if rng.gen::<f64>() > rewrite_prob_fast {
+            self.suppressed_rewrites += 1;
+            return None;
         }
+
+        // --- Phase 2: Expensive Structural Diagnostics (only for survivors) ---
+        let mut neighborhood = self.h.structural_neighbors(anchor_v);
+        neighborhood.insert(anchor_v);
+
+        let (internal_edges, boundary_edges) = crate::observables::compute_coherence_raw(&neighborhood, &self.h);
 
         let coherence = if boundary_edges > 0 {
             internal_edges as f64 / boundary_edges as f64
@@ -1175,11 +931,9 @@ impl RewriteEngine {
             0.0
         };
 
-        // Unified suppression with structure-dependent survival
-        let alpha_base = 2.0;
         let lambda = 0.5;
         let survival_threshold = 1.0;
-        let neighborhood_size = inter.get(&anchor_v).map(|n| n.len()).unwrap_or(0) + 1;
+        let neighborhood_size = self.h.structural_neighbors(anchor_v).len() + 1;
 
         let coherence_boost = if neighborhood_size >= 4 && coherence > survival_threshold {
             lambda * (coherence - survival_threshold)
@@ -1187,8 +941,6 @@ impl RewriteEngine {
             0.0
         };
 
-        // Nonlinear memory: stability^γ creates threshold effect
-        // Low stability ≈ no protection, high stability ≈ strong protection
         let mu = self.params.memory_coupling;
         let gamma = self.params.nonlinear_coupling;
         let stability_cap = 30.0_f64;
@@ -1197,18 +949,17 @@ impl RewriteEngine {
         let memory_contribution = mu * stability_cap * normalized_stability.powf(gamma);
 
         let alpha_eff = alpha_base + coherence_boost + memory_contribution;
-
-        // Phase 8: Coupling Pulse - reduce protection during deep overlap
-        let coupling_modifier = if self.coupled_vertices.contains(&anchor_v) {
-            0.2
-        } else {
-            1.0
-        };
-        let rewrite_prob = (-(alpha_eff * coupling_modifier) * local_density).exp();
-
-        if rng.gen::<f64>() > rewrite_prob {
+        let intensity = self.coupling_intensity.get(&anchor_v).copied().unwrap_or(0.0);
+        let coupling_modifier = 1.0 - 0.8 * intensity;
+        
+        // Final probability check (refined with coherence and memory)
+        let rewrite_prob_refined = (-(alpha_eff * coupling_modifier) * local_density).exp();
+        
+        // Since we already passed rewrite_prob_fast, we only check the delta
+        let p_ratio = rewrite_prob_refined / rewrite_prob_fast;
+        if rng.gen::<f64>() > p_ratio {
             self.suppressed_rewrites += 1;
-            return None; // Suppressed (density + structural protection)
+            return None;
         }
 
         let theta = 1.3; // Nucleation threshold
@@ -1244,7 +995,7 @@ impl RewriteEngine {
     // --------------------------------------------------
     // ξ propagation
     // --------------------------------------------------
-    fn propagate_xi(&mut self, inter: &HashMap<u64, FixedBitSet>, clusters: &HashMap<u64, usize>) {
+    fn propagate_xi(&mut self, clusters: &HashMap<u64, usize>) {
         let mut new_xi = self.xi.clone();
         let xi_max = 1e6;
 
@@ -1262,10 +1013,11 @@ impl RewriteEngine {
             let cid_v = clusters.get(&v);
             let xi_v_decayed = xi_v * self.xi_decay;
 
-            if let Some(neighbors) = inter.get(&v) {
+            if let Some(neighbors) = self.h.structural_neighbors_bitset(&v) {
                 let deg = (neighbors.ones().count() as f64).max(1.0);
                 for u_idx in neighbors.ones() {
                     let u = u_idx as u64;
+                    
                     let cid_u = clusters.get(&u);
 
                     if protect_clusters {
@@ -1295,7 +1047,7 @@ impl RewriteEngine {
     // --------------------------------------------------
     // ξ clusters
     // --------------------------------------------------
-    fn xi_clusters(&self, inter: &HashMap<u64, FixedBitSet>) -> HashMap<u64, usize> {
+    fn xi_clusters(&self) -> HashMap<u64, usize> {
         let mut clusters = HashMap::new();
         let mut visited = HashSet::new();
         let mut cid = 0;
@@ -1316,7 +1068,7 @@ impl RewriteEngine {
             clusters.insert(v, cid);
 
             while let Some(u) = stack.pop() {
-                if let Some(nbrs) = inter.get(&u) {
+                if let Some(nbrs) = self.h.structural_neighbors_bitset(&u) {
                     for w_idx in nbrs.ones() {
                         let w = w_idx as u64;
                         if xi_vertices.contains(&w) && !visited.contains(&w) {
@@ -1336,12 +1088,12 @@ impl RewriteEngine {
     // --------------------------------------------------
     // Topological clusters (PURE TOPOLOGY)
     // --------------------------------------------------
-    fn topo_clusters(&self, inter: &HashMap<u64, FixedBitSet>) -> HashMap<u64, usize> {
+    fn topo_clusters(&self) -> HashMap<u64, usize> {
         let mut clusters = HashMap::new();
         let mut visited = HashSet::new();
         let mut cid = 0;
 
-        for &v in inter.keys() {
+        for &v in self.h.vertices.keys() {
             if visited.contains(&v) {
                 continue;
             }
@@ -1350,7 +1102,7 @@ impl RewriteEngine {
             clusters.insert(v, cid);
 
             while let Some(u) = stack.pop() {
-                if let Some(nbrs) = inter.get(&u) {
+                if let Some(nbrs) = self.h.structural_neighbors_bitset(&u) {
                     for w_idx in nbrs.ones() {
                         let w = w_idx as u64;
                         if !visited.contains(&w) {
@@ -1372,10 +1124,10 @@ impl RewriteEngine {
     // --------------------------------------------------
     fn update_topo_distance_memory(
         &mut self,
-        inter: &HashMap<u64, FixedBitSet>,
+        _inter: &HashMap<u64, FixedBitSet>,
         restrict_to: &HashSet<u64>,
     ) {
-        let topo = self.topo_clusters(inter);
+        let topo = self.topo_clusters();
 
         let mut topo_groups: HashMap<usize, Vec<u64>> = HashMap::new();
         for &v in restrict_to {
@@ -1404,7 +1156,7 @@ impl RewriteEngine {
 
                 let mut min_d = usize::MAX;
                 for &v in &a_verts {
-                    let d = self.graph_distance(inter, v, &b_verts, max_depth);
+                    let d = self.graph_distance(v, &b_verts, max_depth);
                     if d < min_d {
                         min_d = d;
                     }
@@ -1431,7 +1183,7 @@ impl RewriteEngine {
 
                 let mut min_d = usize::MAX;
                 for &v in &a_verts {
-                    let d = self.graph_distance(inter, v, &b_verts, max_depth);
+                    let d = self.graph_distance(v, &b_verts, max_depth);
                     if d < min_d {
                         min_d = d;
                     }
@@ -1452,8 +1204,8 @@ impl RewriteEngine {
     // --------------------------------------------------
     // Cluster distance memory (G2)
     // --------------------------------------------------
-    fn update_xi_distance_memory(&mut self, inter: &HashMap<u64, FixedBitSet>) {
-        let xi_clusters = self.xi_clusters(inter);
+    fn update_xi_distance_memory(&mut self) {
+        let xi_clusters = self.xi_clusters();
 
         let mut cluster_to_vertices: HashMap<usize, Vec<u64>> = HashMap::new();
         for (&v, &cid) in &xi_clusters {
@@ -1480,7 +1232,7 @@ impl RewriteEngine {
 
                 let mut min_d = usize::MAX;
                 for &v in &a_verts {
-                    let d = self.graph_distance(inter, v, &b_verts, max_depth);
+                    let d = self.graph_distance(v, &b_verts, max_depth);
                     if d < min_d {
                         min_d = d;
                     }
@@ -1519,7 +1271,7 @@ impl RewriteEngine {
                 let mut min_d = usize::MAX;
 
                 for &v in &a_verts {
-                    let d = self.graph_distance(inter, v, &b_verts, max_depth);
+                    let d = self.graph_distance(v, &b_verts, max_depth);
                     if d < min_d {
                         min_d = d;
                     }
@@ -1544,7 +1296,7 @@ impl RewriteEngine {
         }
     }
 
-    fn record_xi_current(&mut self, _inter: &HashMap<u64, FixedBitSet>) {
+    fn record_xi_current(&mut self) {
         let touched = self.touched_vertices();
         let mut delta_xi = HashMap::new();
         for v in touched {
@@ -1586,20 +1338,19 @@ impl RewriteEngine {
 
     fn graph_distance(
         &self,
-        inter: &HashMap<u64, FixedBitSet>,
-        start: u64,
+        start_v: u64,
         targets: &HashSet<u64>,
         max_depth: usize,
     ) -> usize {
-        if targets.contains(&start) {
+        if targets.contains(&start_v) {
             return 0;
         }
 
         let mut visited = HashSet::new();
-        visited.insert(start);
+        visited.insert(start_v);
 
         let mut frontier = HashSet::new();
-        frontier.insert(start);
+        frontier.insert(start_v);
 
         let mut depth = 0;
 
@@ -1608,9 +1359,9 @@ impl RewriteEngine {
             let mut next_frontier = HashSet::new();
 
             for &v in &frontier {
-                if let Some(nbrs) = inter.get(&v) {
-                    for u_idx in nbrs.ones() {
-                        let u = u_idx as u64;
+                for u in self.h.structural_neighbors(v) {
+                    if true {
+                        
                         if visited.contains(&u) {
                             continue;
                         }
@@ -1717,7 +1468,7 @@ impl RewriteEngine {
             return false;
         }
 
-        let inter = crate::observables::worldline_interaction_graph(&self.h, 0.0);
+        let _inter = crate::observables::worldline_interaction_graph(&self.h, 0.0);
         let n = self.h.vertices.len().max(1) as f64;
         let max_depth = 20.max((n.log2() * 4.0) as usize);
 
@@ -1730,9 +1481,9 @@ impl RewriteEngine {
             depth += 1;
             let mut nxt = HashSet::new();
             for &v in &frontier {
-                if let Some(nbrs) = inter.get(&v) {
-                    for u_idx in nbrs.ones() {
-                        let u = u_idx as u64;
+                for u in self.h.structural_neighbors(v) {
+                    if true {
+                        
                         if !reachable.contains(&u) {
                             reachable.insert(u);
                             nxt.insert(u);
@@ -1758,7 +1509,7 @@ impl RewriteEngine {
                 continue;
             }
 
-            let d = self.graph_distance(&inter, vid, &xi_support, max_depth);
+            let d = self.graph_distance(vid, &xi_support, max_depth);
 
             if d > best_d || best_vid.is_none() {
                 best_d = d;
@@ -1800,7 +1551,7 @@ impl RewriteEngine {
         &self,
         knot: &crate::observables::TopologicalKnot,
     ) -> f64 {
-        let alpha_base = 2.0;
+        let alpha_base = 1.5;
         let lambda = 0.5;
         let survival_threshold = 1.0;
 

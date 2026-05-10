@@ -67,6 +67,38 @@ python3 analyze_lifetimes.py
 
 ---
 
+## ⚙️ Configuration & Physics Flags
+
+The simulation engine is fully modular, allowing you to tweak the hypergraph generation and structural physics directly via command-line arguments without recompiling the codebase.
+
+```bash
+cargo run --release --bin run_simulation -- --steps 100000 --pure --p_fusion 0.10 --gamma 2.5 --mu 0.5
+```
+
+### Execution Modes
+- **Pure Mode (`--pure`)**: Bypasses the analytical density filters. This is mandatory when bootstrapping a simulation from a small, highly connected vacuum seed (like the baseline 4-vertex seed). It strictly forces structural emergence using your raw `p_create` and `p_fusion` constants.
+- **Honest Physics (Default)**: If `--pure` is omitted, the engine engages the exponential density filter (`exp(-alpha * local_density)`). If the local spatial density or structural coherence is too high, it aggressively suppresses rewrites to prevent physical singularities and geometric collapse.
+- **Aggressive/Control Mode**: Enforces strict kinematic constraints on topological knots.
+
+**[View the complete, detailed list of Engine Execution Flags in docs/FLAGS.md](../docs/FLAGS.md)**
+
+---
+
+## ⚡ Engine Computational Complexity
+The Rust `RewriteEngine` is heavily optimized for localized operations, successfully breaking away from $O(V)$ scaling:
+
+| Engine Operation | Algorithmic Complexity | Description |
+|:---|:---|:---|
+| **Anchor Sampling** | **$O(1)$** | Target vertices are selected via amortized rejection sampling, avoiding expensive full-graph array cloning. |
+| **Edge Creation** | **$O(k_{sample})$** | Binding a vertex to a random subset of existing structural neighbors. |
+| **Vertex Fusion** | **$O(E_v)$** | Deleting a vertex scales linearly with the number of its connected hyperedges ($E_v$), dissolving all attached connections. |
+| **Local Clustering** | **$O(k^2)$** | Calculating the clustering coefficient requires checking intersections between all pairs of the target's $k$ structural neighbors. |
+| **Coherence Metrics** | **$O(k \cdot E_v)$** | Evaluating boundary vs internal edges requires checking the hyperedge incidence for all vertices within the localized neighborhood. |
+
+*Note: Because the "Honest Physics" density filter actively suppresses hyper-dense regions, $k$ (the local degree) is kept naturally bounded, preventing these operations from geometrically degrading into $O(V^2)$ bottlenecks!*
+
+---
+
 ## 📈 Interaction Phenomenology
 The system confirms that "Matter" is a persistent topological knot that interacts via a discrete, depth-dependent force. 
 

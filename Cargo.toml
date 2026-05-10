@@ -28,7 +28,7 @@ path = "src/bin/exp_critical_scan.rs"
 
 [[bin]]
 name = "interaction_experiment"
-path = "src/bin/interaction_experiment.rs"
+path = "src/bin/deprecated_kinematics/interaction_experiment.rs"
 
 [[bin]]
 name = "robustness_pipeline"
@@ -40,8 +40,8 @@ path = "src/bin/pure_emergence_test.rs"
 
 [[bin]]
 name = "force_law_aggregator"
-path = "src/bin/force_law_aggregator.rs"
+path = "src/bin/deprecated_kinematics/force_law_aggregator.rs"
 
 [[bin]]
 name = "force_law_fit"
-path = "src/bin/force_law_fit.rs"
+path = "src/bin/deprecated_kinematics/force_law_fit.rs"

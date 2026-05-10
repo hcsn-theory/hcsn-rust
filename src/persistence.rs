@@ -18,7 +18,7 @@ impl Persistence {
 
     /// Standard HCSN interaction header for scaling studies
     pub fn write_header(writer: &mut dyn Write) -> std::io::Result<()> {
-        writeln!(writer, "thread_id,pre_px,pre_py,post_px,post_py,pre_p_mag,post_p_mag,pre_mass,post_mass,pre_s_sum,post_s_sum,pre_s_mean,post_s_mean,pre_age_a,pre_age_b,chi,duration,theta,stability_bin,pre_E_total,post_E_total")
+        writeln!(writer, "thread_id,v_rel_smoothed,initial_chi,final_chi,pre_p_mag,post_p_mag,pre_mass,post_mass,pre_s_sum,post_s_sum,pre_s_mean,post_s_mean,pre_age_a,pre_age_b,chi_max,duration,theta,stability_bin,pre_E_total,post_E_total")
     }
 
     /// Formats a single InteractionEvent into a CSV row
@@ -30,27 +30,27 @@ impl Persistence {
 
         let m_pre_a = event.pre_a.7 as f64 * event.pre_a.4.powi(2);
         let m_pre_b = event.pre_b.7 as f64 * event.pre_b.4.powi(2);
-        let vx_pre_a = event.pre_a.3 .0.clamp(-10.0, 10.0);
-        let vx_pre_b = event.pre_b.3 .0.clamp(-10.0, 10.0);
+        let vx_pre_a = event.pre_a.3.clamp(-10.0, 10.0);
+        let vx_pre_b = event.pre_b.3.clamp(-10.0, 10.0);
         let age_a = event.pre_a.10;
         let age_b = event.pre_b.10;
 
         let (m_post_a, vx_post_a, s_post_a) = if let Some(a) = event.post_a {
-            (a.7 as f64 * a.4.powi(2), a.3 .0.clamp(-10.0, 10.0), a.5)
+            (a.7 as f64 * a.4.powi(2), a.3.clamp(-10.0, 10.0), a.5)
         } else {
             (0.0, 0.0, 0.0) // Destruction state
         };
 
         let (m_post_b, vx_post_b, s_post_b) = if let Some(b) = event.post_b {
-            (b.7 as f64 * b.4.powi(2), b.3 .0.clamp(-10.0, 10.0), b.5)
+            (b.7 as f64 * b.4.powi(2), b.3.clamp(-10.0, 10.0), b.5)
         } else {
             (0.0, 0.0, 0.0) // Destruction state
         };
 
-        let pre_px = (m_pre_a * vx_pre_a) + (m_pre_b * vx_pre_b);
-        let pre_py = 0.0;
-        let post_px = (m_post_a * vx_post_a) + (m_post_b * vx_post_b);
-        let post_py = 0.0;
+        let _pre_px = (m_pre_a * vx_pre_a) + (m_pre_b * vx_pre_b);
+        let _pre_py = 0.0;
+        let _post_px = (m_post_a * vx_post_a) + (m_post_b * vx_post_b);
+        let _post_py = 0.0;
         let pre_p_mag = (m_pre_a * vx_pre_a).abs() + (m_pre_b * vx_pre_b).abs();
         let post_p_mag = (m_post_a * vx_post_a).abs() + (m_post_b * vx_post_b).abs();
 
@@ -72,8 +72,8 @@ impl Persistence {
             return None;
         }
 
-        Some(format!("{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{},{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}",
-            tid, pre_px, pre_py, post_px, post_py, pre_p_mag, post_p_mag, (m_pre_a + m_pre_b), (m_post_a + m_post_b),
+        Some(format!("{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{},{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}",
+            tid, event.v_rel_smoothed, event.initial_chi, event.prev_chi, pre_p_mag, post_p_mag, (m_pre_a + m_pre_b), (m_post_a + m_post_b),
             pre_s_sum, post_s_sum, pre_s_mean, post_s_mean, age_a, age_b, event.overlap_depth, event.duration as f64, 0.0, stability_bin, pre_e_total, post_e_total))
     }
 
@@ -86,5 +86,15 @@ impl Persistence {
             .open(filename)
             .expect("Failed to open persistence file");
         BufWriter::new(file)
+    }
+
+    /// Flushes a batch of events to the writer and clears the buffer
+    pub fn flush_events(writer: &mut BufWriter<File>, events: &mut Vec<InteractionEvent>, tid: usize) {
+        for event in events.drain(..) {
+            if let Some(line) = Self::format_event(&event, tid) {
+                let _ = writeln!(writer, "{}", line);
+            }
+        }
+        let _ = writer.flush();
     }
 }

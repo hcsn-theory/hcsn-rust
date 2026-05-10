@@ -33,21 +33,20 @@ pub fn edge_creation_rule(
     let mut rng = rand::thread_rng();
 
     // Select target edge
-    let edge = if let Some(anchor_id) = anchor_vertex_id {
-        let candidates: Vec<&Hyperedge> = h
-            .hyperedges
-            .values()
-            .filter(|e| e.vertices.contains(&anchor_id))
-            .collect();
-
-        if candidates.is_empty() {
+    let edge_id = if let Some(anchor_id) = anchor_vertex_id {
+        let candidate_ids = h.edges_containing(anchor_id);
+        if candidate_ids.is_empty() {
             return None;
         }
-        (*candidates.choose(&mut rng).unwrap()).clone()
+        *candidate_ids.choose(&mut rng).unwrap()
     } else {
-        let edges: Vec<&Hyperedge> = h.hyperedges.values().collect();
-        (*edges.choose(&mut rng).unwrap()).clone()
+        if h.active_edge_ids.is_empty() {
+            return None;
+        }
+        *h.active_edge_ids.choose(&mut rng).unwrap()
     };
+    
+    let edge = h.hyperedges.get(&edge_id).cloned().unwrap();
 
     // --------------------------------------------------
     // LOOP CLOSURE (CRITICAL FOR GEOMETRY)
@@ -82,7 +81,7 @@ pub fn edge_creation_rule(
 
     // causal thickening
     for &v_id in &edge.vertices {
-        let past = h.causal_past(v_id);
+        let past: Vec<u64> = h.causal_past(v_id).collect();
         for u_id in past {
             if rng.gen::<f64>() < 0.3 {
                 h.add_causal_relation(u_id, new_vertex_id);
@@ -109,16 +108,12 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     let mut rng = rand::thread_rng();
 
     let edge = if let Some(anchor_id) = anchor_vertex_id {
-        let candidates: Vec<&Hyperedge> = h
-            .hyperedges
-            .values()
-            .filter(|e| e.vertices.contains(&anchor_id))
-            .collect();
-
-        if candidates.is_empty() {
+        let candidate_ids = h.edges_containing(anchor_id);
+        if candidate_ids.is_empty() {
             return None;
         }
-        (*candidates.choose(&mut rng).unwrap()).clone()
+        let eid = *candidate_ids.choose(&mut rng).unwrap();
+        h.hyperedges.get(&eid).cloned().unwrap()
     } else {
         let edges: Vec<&Hyperedge> = h.hyperedges.values().collect();
         (*edges.choose(&mut rng).unwrap()).clone()
@@ -131,10 +126,7 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     let v_keep_id = edge.vertices[0];
     let v_remove_id = edge.vertices[1];
 
-    let has_remaining_edges = h
-        .hyperedges
-        .values()
-        .any(|e| !e.vertices.contains(&v_remove_id));
+    let has_remaining_edges = h.hyperedges.len() > h.edges_containing(v_remove_id).len();
 
     if !has_remaining_edges {
         return None;
@@ -146,19 +138,22 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     let v_remove = h.vertices.get(&v_remove_id).unwrap().clone();
     undo.removed_vertex = Some(v_remove);
 
-    // log causal relations and adjacency
-    for u_id in h.vertices.keys().cloned().collect::<Vec<_>>() {
-        if h.is_causally_related(u_id, v_remove_id) {
-            if let Some(fb) = h.causal_future_bitset(u_id) {
-                undo.old_causal_future.insert(u_id, fb);
-            }
-            if let Some(pb) = h.causal_past_bitset(u_id) {
-                undo.old_causal_past.insert(u_id, pb);
-            }
-            if let Some(v) = h.vertices.get(&u_id) {
-                undo.old_parents.insert(u_id, v.parents.clone());
-                undo.old_children.insert(u_id, v.children.clone());
-            }
+    // log causal relations and adjacency for affected vertices only
+    use std::collections::HashSet;
+    let mut affected: HashSet<u64> = h.causal_past(v_remove_id).collect();
+    affected.extend(h.causal_future(v_remove_id));
+    affected.insert(v_remove_id);
+
+    for u_id in affected {
+        if let Some(fb) = h.causal_future_bitset(u_id) {
+            undo.old_causal_future.insert(u_id, fb.clone());
+        }
+        if let Some(pb) = h.causal_past_bitset(u_id) {
+            undo.old_causal_past.insert(u_id, pb.clone());
+        }
+        if let Some(v) = h.vertices.get(&u_id) {
+            undo.old_parents.insert(u_id, v.parents.clone());
+            undo.old_children.insert(u_id, v.children.clone());
         }
     }
 
@@ -171,36 +166,33 @@ pub fn vertex_fusion_rule(h: &mut Hypergraph, anchor_vertex_id: Option<u64>) -> 
     for p_id in parents {
         if let Some(p) = h.vertices.get_mut(&p_id) {
             p.children.retain(|&id| id != v_remove_id);
-            p.children.push(v_keep_id);
+            if !p.children.contains(&v_keep_id) {
+                p.children.push(v_keep_id);
+            }
         }
         h.add_causal_relation(p_id, v_keep_id);
     }
     for c_id in children {
         if let Some(c) = h.vertices.get_mut(&c_id) {
             c.parents.retain(|&id| id != v_remove_id);
-            c.parents.push(v_keep_id);
+            if !c.parents.contains(&v_keep_id) {
+                c.parents.push(v_keep_id);
+            }
         }
         h.add_causal_relation(v_keep_id, c_id);
     }
 
     // remove edges containing v_remove_id
-    let mut edges_to_remove = Vec::new();
-    for (eid, e) in &h.hyperedges {
-        if e.vertices.contains(&v_remove_id) {
-            edges_to_remove.push(*eid);
-        }
-    }
+    let edges_to_remove = h.edges_containing(v_remove_id);
 
     for eid in edges_to_remove {
-        if let Some(e) = h.hyperedges.remove(&eid) {
+        if let Some(e) = h.remove_hyperedge(eid) {
             undo.removed_edges.insert(eid, e);
         }
     }
 
-    // remove vertex
-    h.vertices.remove(&v_remove_id);
-    h.causal_future.remove(&v_remove_id);
-    h.causal_past.remove(&v_remove_id);
+    // remove vertex (includes local causal scrubbing)
+    h.remove_vertex(v_remove_id);
 
     Some(undo)
 }

@@ -81,7 +81,7 @@ fn main() {
         engine.step();
         if i % 1000 == 0 {
             let active = engine.active_knots.len();
-            let omega = compute_omega(&hcsn_rust::observables::worldline_interaction_graph(
+            let omega = hcsn_rust::observables::compute_omega_graph(&hcsn_rust::observables::worldline_interaction_graph(
                 &engine.h, 0.0,
             ));
             println!("  t={} | active_knots={} | Ω={:.4}", i, active, omega);

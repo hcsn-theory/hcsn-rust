@@ -167,7 +167,7 @@ fn main() {
 
         // Capture Thread Diagnostics
         let final_vertices = engine.h.vertices.len();
-        let total_interactions = engine.interaction_counts.len();
+        let total_interactions = engine.interaction_events.len();
         let mut diag_lock = diagnostics.lock().unwrap();
         diag_lock[tid] = json!({
             "seed": seed,

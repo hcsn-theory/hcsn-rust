@@ -121,7 +121,6 @@ fn main() {
             for tracker in trackers.iter_mut() {
                 RewriteEngine::process_knot_update_static(
                     &engine.h,
-                    &inter,
                     &mut tracker.active_knots,
                     &mut tracker.dead_knots,
                     &mut tracker.next_knot_id,

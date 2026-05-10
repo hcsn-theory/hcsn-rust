@@ -76,4 +76,15 @@ impl PhysicsParams {
             export_mechanisms,
         }
     }
+
+    pub fn apply_overrides(&mut self, config: &crate::rewrite_engine::EngineConfig) {
+        if let Some(v) = config.gamma_defect { self.gamma_defect = v; }
+        if let Some(v) = config.inertia_scale { self.inertia_scale = v; }
+        if let Some(v) = config.interaction_boost { self.interaction_boost = v; }
+        if let Some(v) = config.stability_decay { self.stability_decay = v; }
+        if let Some(v) = config.nonlinear_coupling { self.nonlinear_coupling = v; }
+        if let Some(v) = config.memory_coupling { self.memory_coupling = v; }
+        if let Some(v) = config.defect_injection { self.defect_injection = v; }
+        if config.disable_patches { self.enable_conservation_patches = false; }
+    }
 }

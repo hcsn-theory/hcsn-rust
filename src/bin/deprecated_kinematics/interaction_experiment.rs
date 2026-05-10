@@ -28,7 +28,7 @@ fn main() {
     loop {
         engine.step();
         let inter = worldline_interaction_graph(&engine.h, 0.0);
-        let omega = compute_omega(&inter);
+        let omega = hcsn_rust::observables::compute_omega_graph(&inter);
         if (omega - OMEGA_TARGET).abs() < OMEGA_TOL {
             break;
         }
@@ -100,7 +100,7 @@ fn main() {
 
         let t2 = Instant::now();
 
-        let omega = compute_omega(&inter);
+        let omega = hcsn_rust::observables::compute_omega_graph(&inter);
 
         interaction_log.push(json!({
             "t": engine.time,

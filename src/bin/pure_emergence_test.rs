@@ -1,5 +1,4 @@
 use hcsn_rust::hypergraph::Hypergraph;
-use hcsn_rust::observables::compute_omega;
 use hcsn_rust::rewrite_engine::RewriteEngine;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -69,7 +68,7 @@ fn main() {
                 "  t={} | active_knots={} | Ω={:.4}",
                 i,
                 active,
-                compute_omega(&hcsn_rust::observables::worldline_interaction_graph(
+                hcsn_rust::observables::compute_omega_graph(&hcsn_rust::observables::worldline_interaction_graph(
                     &engine.h, 0.0
                 ))
             );
